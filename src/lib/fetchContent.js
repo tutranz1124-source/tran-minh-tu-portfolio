@@ -3,7 +3,7 @@ let lastGoodContent = null;
 const contentCache = new Map();
 
 export function getContentUrl(lang) {
-  return `/public/CV/portfolio.${lang}.json`;
+  return `./public/CV/portfolio.${lang}.json`;
 }
 
 export function setAbortController(ac) {
@@ -51,3 +51,4 @@ export async function loadContent(lang) {
 
   return structuredClone(content);
 }
+

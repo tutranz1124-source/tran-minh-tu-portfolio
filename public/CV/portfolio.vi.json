@@ -10,7 +10,7 @@
       "github": "https://github.com/tutranz0101",
       "linkedin": "",
       "portfolio": "",
-      "cv": "/public/CV/cv.pdf"
+      "cv": "./public/CV/cv.pdf"
     }
   },
   "hero": {
@@ -189,3 +189,4 @@
     "note": "Xây bằng vanilla HTML/CSS/JS. Nội dung EN/VI tải từ JSON với cơ chế fallback an toàn."
   }
 }
+
