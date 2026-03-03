@@ -663,7 +663,7 @@
 .rolling-title {
   display: inline-flex;
   align-items: baseline;
-  cursor: pointer;
+  cursor: default;
 }
 
 .rolling-title__visual {
@@ -714,14 +714,16 @@
   }
 }
 
-.rolling-title:hover .rolling-title__char {
-  animation: rolling-title-hover 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--roll-index, 0) * 26ms);
-}
+@media (hover: hover) {
+  .rolling-title:hover .rolling-title__char {
+    animation: rolling-title-hover 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--roll-index, 0) * 26ms);
+  }
 
-.rolling-title:hover {
-  color: rgba(248, 250, 252, 0.98);
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.16);
+  .rolling-title:hover {
+    color: rgba(248, 250, 252, 0.98);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.16);
+  }
 }
 
 .rolling-title:focus-visible .rolling-title__char {
