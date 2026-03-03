@@ -2,6 +2,9 @@ const SWIPER_SCRIPT_SRC = "https://unpkg.com/swiper@12/swiper-bundle.min.js";
 
 let swiperScriptPromise = null;
 let swiperInstance = null;
+let carouselResizeObserver = null;
+let carouselResizeHandler = null;
+let carouselResizeRaf = 0;
 
 function loadSwiperScript() {
   if (window.Swiper) {
@@ -54,7 +57,90 @@ function updateStageBackground(swiper, stageEl) {
   stageEl.style.setProperty("--stage-bg-2", colors[1].trim());
 }
 
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function applyResponsiveCarouselVars(stageEl) {
+  const measuredWidth = stageEl.clientWidth || stageEl.getBoundingClientRect().width || 336;
+  const stageWidth = clamp(measuredWidth, 220, 1600);
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth || stageWidth;
+  const viewportRatio = clamp((viewportWidth - 360) / (1440 - 360), 0, 1);
+  const slideWidth = Math.round(clamp(stageWidth - 20, 228, 336));
+  const slideHeight = Math.round(clamp(slideWidth * 1.315, 320, 442));
+  const arrowScale = 0.85;
+
+  const arrowHeightMin = 56;
+  const arrowHeightMax = 116;
+  const arrowHeightByViewport = arrowHeightMin + ((arrowHeightMax - arrowHeightMin) * viewportRatio);
+  const arrowHeightBySlide = slideHeight * 0.24;
+  const baseArrowHeight = clamp(Math.min(arrowHeightByViewport, arrowHeightBySlide), arrowHeightMin, arrowHeightMax);
+  const arrowHeight = Math.round(baseArrowHeight * arrowScale);
+  const arrowWidth = Math.round(clamp(arrowHeight * 0.48, 26, 48));
+  const arrowIcon = Math.round(clamp(arrowWidth * 0.34, 9, 15));
+
+  stageEl.style.setProperty("--exp-slide-w", `${slideWidth}px`);
+  stageEl.style.setProperty("--exp-slide-h", `${slideHeight}px`);
+  stageEl.style.setProperty("--exp-arrow-w", `${arrowWidth}px`);
+  stageEl.style.setProperty("--exp-arrow-h", `${arrowHeight}px`);
+  stageEl.style.setProperty("--exp-arrow-icon", `${arrowIcon}px`);
+
+  return stageWidth;
+}
+
+function coverflowForStageWidth(stageWidth) {
+  const ratio = clamp((stageWidth - 280) / (1240 - 280), 0, 1);
+  return {
+    rotate: 0,
+    stretch: Math.round(24 + ratio * (90 - 24)),
+    depth: Math.round(105 + ratio * (200 - 105)),
+    modifier: Number((1 + ratio * 0.15).toFixed(2)),
+    slideShadows: false,
+  };
+}
+
+function updateCarouselLayout(swiper, stageEl) {
+  if (!swiper || swiper.destroyed || !stageEl?.isConnected) {
+    return;
+  }
+
+  const stageWidth = applyResponsiveCarouselVars(stageEl);
+  const nextEffect = coverflowForStageWidth(stageWidth);
+  const currentEffect = swiper.params.coverflowEffect || {};
+  const changed =
+    currentEffect.stretch !== nextEffect.stretch
+    || currentEffect.depth !== nextEffect.depth
+    || currentEffect.modifier !== nextEffect.modifier;
+
+  if (changed) {
+    swiper.params.coverflowEffect = { ...currentEffect, ...nextEffect };
+    swiper.originalParams.coverflowEffect = {
+      ...(swiper.originalParams.coverflowEffect || {}),
+      ...nextEffect,
+    };
+  }
+
+  swiper.update();
+  updateSlideVars(swiper);
+  updateStageBackground(swiper, stageEl);
+}
+
 export function destroyExperienceCarousel() {
+  if (carouselResizeRaf) {
+    cancelAnimationFrame(carouselResizeRaf);
+    carouselResizeRaf = 0;
+  }
+
+  if (carouselResizeObserver) {
+    carouselResizeObserver.disconnect();
+    carouselResizeObserver = null;
+  }
+
+  if (carouselResizeHandler) {
+    window.removeEventListener("resize", carouselResizeHandler);
+    carouselResizeHandler = null;
+  }
+
   if (swiperInstance && typeof swiperInstance.destroy === "function") {
     swiperInstance.destroy(true, true);
   }
@@ -72,6 +158,8 @@ export async function initExperienceCarousel(reducedMotion = false) {
 
   const slideCount = carouselEl.querySelectorAll(".swiper-slide").length;
   const canCycle = slideCount > 1;
+  const stageWidth = applyResponsiveCarouselVars(stageEl);
+  const initialEffect = coverflowForStageWidth(stageWidth);
 
   try {
     const SwiperRef = await loadSwiperScript();
@@ -90,13 +178,7 @@ export async function initExperienceCarousel(reducedMotion = false) {
       allowTouchMove: canCycle,
       speed: reducedMotion ? 0 : 1200,
       watchSlidesProgress: true,
-      coverflowEffect: {
-        rotate: 0,
-        stretch: 90,
-        depth: 200,
-        modifier: 1.15,
-        slideShadows: false,
-      },
+      coverflowEffect: initialEffect,
       navigation: {
         nextEl: ".exp-carousel-next",
         prevEl: ".exp-carousel-prev",
@@ -118,6 +200,28 @@ export async function initExperienceCarousel(reducedMotion = false) {
         },
       },
     });
+
+    const requestLayoutUpdate = () => {
+      if (carouselResizeRaf) {
+        cancelAnimationFrame(carouselResizeRaf);
+      }
+      carouselResizeRaf = requestAnimationFrame(() => {
+        carouselResizeRaf = 0;
+        updateCarouselLayout(swiperInstance, stageEl);
+      });
+    };
+
+    carouselResizeHandler = requestLayoutUpdate;
+    window.addEventListener("resize", carouselResizeHandler, { passive: true });
+
+    if (typeof ResizeObserver === "function") {
+      carouselResizeObserver = new ResizeObserver(() => {
+        requestLayoutUpdate();
+      });
+      carouselResizeObserver.observe(stageEl);
+    }
+
+    requestLayoutUpdate();
   } catch (error) {
     console.warn("Experience carousel unavailable:", error);
   }

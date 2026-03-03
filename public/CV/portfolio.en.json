@@ -14,7 +14,7 @@
     }
   },
   "hero": {
-    "badge": "Building resilient systems for real-world operations",
+    "badge": "",
     "tagline": "I design and ship end-to-end software that stays reliable under high daily transaction load.",
     "about_paragraphs": [
       "I work across backend services, Windows desktop applications, and on-site operations tooling, with strong ownership from planning to deployment.",

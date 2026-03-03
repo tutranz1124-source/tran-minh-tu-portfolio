@@ -152,9 +152,12 @@ function createHeroCard(state, content) {
   const lang = state.lang;
   const meta = content.meta ?? {};
   const hero = content.hero ?? {};
+  const heroBadge = typeof hero.badge === "string" ? hero.badge.trim() : "";
 
   const card = el("article", "card hero reveal", { "aria-labelledby": "hero-title" });
-  card.appendChild(el("span", "hero__badge", {}, [hero.badge ?? "Available for software roles"]));
+  if (heroBadge) {
+    card.appendChild(el("span", "hero__badge", {}, [heroBadge]));
+  }
   card.appendChild(el("h1", "u-line-clamp-2", { id: "hero-title" }, [activeName(content, lang)]));
   card.appendChild(el("p", "hero__subtitle", {}, [meta.title ?? "Software Engineer / Full-stack Developer"]));
 
