@@ -1,0 +1,191 @@
+{
+  "meta": {
+    "name_en": "Tu Minh Tran",
+    "name_vi": "Trần Minh Tú",
+    "title": "Kỹ sư phần mềm / Lập trình viên Full-stack",
+    "location": "TP. Hồ Chí Minh, Việt Nam",
+    "email": "tutranz0101@gmail.com",
+    "phone": "+84 0941 556 649",
+    "links": {
+      "github": "https://github.com/tutranz0101",
+      "linkedin": "",
+      "portfolio": "",
+      "cv": "/public/CV/cv.pdf"
+    }
+  },
+  "hero": {
+    "badge": "Xây hệ thống vận hành ổn định trong điều kiện thực tế",
+    "tagline": "Tôi thiết kế và triển khai phần mềm end-to-end, ưu tiên độ tin cậy khi tải giao dịch lớn mỗi ngày.",
+    "about_paragraphs": [
+      "Tôi làm xuyên suốt từ backend service, ứng dụng desktop Windows đến công cụ vận hành tại hiện trường, với tinh thần ownership từ lập kế hoạch đến triển khai.",
+      "Trọng tâm của tôi là trade-off thực dụng: độ ổn định trước, quy trình rõ cho người vận hành, và khả năng phục hồi nhanh khi hạ tầng gặp sự cố."
+    ],
+    "current_line": "Hiện đang phụ trách toàn bộ nền tảng bán vé và vận hành phà AGF với vai trò sole developer."
+  },
+  "impact": {
+    "title": "Tác động",
+    "subtitle": "Kết quả đo được từ môi trường production",
+    "metrics": [
+      {
+        "value_num": 20000,
+        "value_suffix": "/ngày",
+        "display": "20k/ngày",
+        "animate": true,
+        "label": "Lượt vé trung bình",
+        "note": "Cao điểm đạt khoảng 40k vé/ngày"
+      },
+      {
+        "value_num": 7,
+        "value_suffix": " bến",
+        "display": "7 bến",
+        "animate": true,
+        "label": "Phạm vi triển khai",
+        "note": "Đưa vào vận hành toàn bộ các bến của AGF"
+      },
+      {
+        "value_num": 60,
+        "value_suffix": "+ người dùng",
+        "display": "60+ người dùng",
+        "animate": true,
+        "label": "Người dùng vận hành",
+        "note": "Nhân sự bán vé, điều hành và quản trị dùng hệ thống hằng ngày"
+      },
+      {
+        "value_num": 0.8,
+        "value_suffix": "s",
+        "display": "0.5-1.0s",
+        "animate": true,
+        "label": "Tốc độ soát vé",
+        "note": "Giảm từ ~3.0s sau khi tối ưu luồng và xử lý dữ liệu"
+      }
+    ]
+  },
+  "featured": {
+    "title": "Dự án nổi bật",
+    "project": {
+      "name": "Nền tảng bán vé & vận hành AGF",
+      "meta": "Go, SQLite, REST APIs, LAN/Wi-Fi, Windows scripting, NanoPi",
+      "context": "Hệ thống bán vé và vận hành end-to-end cho các bến phà với lưu lượng hành khách cao mỗi ngày.",
+      "role": "Vai trò: Sole developer từ kiến trúc đến vận hành production",
+      "constraints": [
+        "Kết nối mạng giữa các bến không ổn định, bắt buộc hệ thống phải vận hành tốt theo hướng offline-first.",
+        "Người vận hành không chuyên kỹ thuật nên luồng thao tác phải đơn giản và dễ triển khai.",
+        "Phải chịu tải đột biến vào giờ cao điểm mà không làm chậm quy trình lên tàu."
+      ],
+      "tradeoffs": [
+        "Chọn SQLite + chiến lược đồng bộ có kiểm soát để giảm rủi ro vận hành thay vì kiến trúc phân tán phức tạp.",
+        "Ưu tiên workflow quyết định được và khả năng phục hồi hơn UI giàu tính năng.",
+        "Phát triển công cụ desktop chuyên biệt để đảm bảo ổn định cục bộ thay vì phụ thuộc hoàn toàn vào web."
+      ],
+      "architecture": [
+        "Ứng dụng TicketSeller cho bán vé và giao dịch tại bến",
+        "AGF Console cho quản trị, báo cáo và điều hành",
+        "Dịch vụ self-hosted có backup/restore và watchdog giám sát"
+      ],
+      "tech_chips": [
+        "Go",
+        "SQLite",
+        "REST API",
+        "Windows App",
+        "LAN/Wi-Fi",
+        "NanoPi",
+        "PowerShell"
+      ],
+      "links": {
+        "case_study": "",
+        "repo": "",
+        "demo": ""
+      },
+      "image": ""
+    }
+  },
+  "more_work": {
+    "title": "Dự án khác",
+    "subtitle": "Một số sản phẩm đã triển khai gần đây",
+    "items": [
+      {
+        "name": "Dashboard doanh nghiệp có hỗ trợ AI",
+        "meta": "Honest Agency, 2024",
+        "desc": "Xây prototype phân tích hiệu suất và CRM reporting, cân bằng giữa tốc độ bàn giao, chi phí và khả năng duy trì."
+      },
+      {
+        "name": "Nền tảng dịch vụ WordPress",
+        "meta": "Freelance, 2024",
+        "desc": "Thiết kế và triển khai website WordPress hoàn chỉnh, bổ sung tính năng PHP tùy biến theo quy trình vận hành thực tế."
+      },
+      {
+        "name": "Chiến dịch Telegram automation",
+        "meta": "Freelance, 2024",
+        "desc": "Xây bot automation thu hút khoảng 1.500 người tham gia trong khoảng 2 tuần."
+      }
+    ]
+  },
+  "experience": {
+    "title": "Kinh nghiệm",
+    "subtitle": "Ownership sản phẩm, kỹ thuật và bàn giao",
+    "items": [
+      {
+        "date": "10/2025 - nay",
+        "role": "Kỹ sư phần mềm (Sole Developer) - Công ty CP Phà An Giang",
+        "desc": "Xây dựng và vận hành hệ thống bán vé + điều hành cho nhiều bến phà với lưu lượng giao dịch lớn mỗi ngày."
+      },
+      {
+        "date": "09/2024 - 12/2024",
+        "role": "Thực tập Lập trình viên Ứng dụng - Honest Agency (Canada)",
+        "desc": "Tham gia phát triển dashboard có hỗ trợ AI và đảm nhận vai trò PM-style trong thu thập yêu cầu, làm rõ phạm vi và điều phối mục tiêu theo tuần."
+      },
+      {
+        "date": "04/2024 - 06/2024",
+        "role": "Lập trình viên WordPress (Freelance) - Check Unlock VN",
+        "desc": "Triển khai hệ thống WordPress production và tích hợp automation Telegram theo yêu cầu nghiệp vụ."
+      }
+    ]
+  },
+  "skills": {
+    "title": "Kỹ năng",
+    "items": [
+      {
+        "key": "Ngôn ngữ",
+        "value": "Go, JavaScript, SQL, PHP"
+      },
+      {
+        "key": "Frontend",
+        "value": "React, HTML, CSS"
+      },
+      {
+        "key": "Backend",
+        "value": "REST API, đồng bộ offline, thiết kế dịch vụ"
+      },
+      {
+        "key": "Cơ sở dữ liệu",
+        "value": "SQLite, PostgreSQL"
+      },
+      {
+        "key": "Hệ thống",
+        "value": "Windows scripting, embedded Linux"
+      },
+      {
+        "key": "Vận hành",
+        "value": "Backup/restore, failover, watchdog monitoring"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Liên hệ",
+    "subtitle": "Sẵn sàng cho cơ hội kỹ thuật mới",
+    "cta": "Nếu bạn cần một kỹ sư thực dụng có thể đi trọn vòng đời sản phẩm, hãy kết nối với tôi.",
+    "links": [
+      {
+        "label": "Email",
+        "href": "mailto:tutranz0101@gmail.com"
+      },
+      {
+        "label": "GitHub",
+        "href": "https://github.com/tutranz0101"
+      }
+    ]
+  },
+  "footer": {
+    "note": "Xây bằng vanilla HTML/CSS/JS. Nội dung EN/VI tải từ JSON với cơ chế fallback an toàn."
+  }
+}

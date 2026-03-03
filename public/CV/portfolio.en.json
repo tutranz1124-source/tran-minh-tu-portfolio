@@ -1,0 +1,191 @@
+{
+  "meta": {
+    "name_en": "Tu Minh Tran",
+    "name_vi": "Tr?n Minh Tú",
+    "title": "Software Engineer / Full-stack Developer",
+    "location": "Ho Chi Minh City, Vietnam",
+    "email": "tutranz0101@gmail.com",
+    "phone": "+84 0941 556 649",
+    "links": {
+      "github": "https://github.com/tutranz0101",
+      "linkedin": "",
+      "portfolio": "",
+      "cv": "/public/CV/cv.pdf"
+    }
+  },
+  "hero": {
+    "badge": "Building resilient systems for real-world operations",
+    "tagline": "I design and ship end-to-end software that stays reliable under high daily transaction load.",
+    "about_paragraphs": [
+      "I work across backend services, Windows desktop applications, and on-site operations tooling, with strong ownership from planning to deployment.",
+      "My focus is practical engineering trade-offs: reliability first, clear workflows for operators, and fast incident recovery when infrastructure fails."
+    ],
+    "current_line": "Currently leading the AGF ferry ticketing and operations platform as the sole developer."
+  },
+  "impact": {
+    "title": "Impact",
+    "subtitle": "Measured outcomes from production deployment",
+    "metrics": [
+      {
+        "value_num": 20000,
+        "value_suffix": "/day",
+        "display": "20k/day",
+        "animate": true,
+        "label": "Average tickets processed",
+        "note": "Peak throughput reaches ~40k/day during high-demand periods"
+      },
+      {
+        "value_num": 7,
+        "value_suffix": " stations",
+        "display": "7 stations",
+        "animate": true,
+        "label": "Live deployment scope",
+        "note": "System rollout across all AGF ferry stations"
+      },
+      {
+        "value_num": 60,
+        "value_suffix": "+ users",
+        "display": "60+ users",
+        "animate": true,
+        "label": "Operational users",
+        "note": "Ticketing, admin, and operations staff using the platform daily"
+      },
+      {
+        "value_num": 0.8,
+        "value_suffix": "s",
+        "display": "0.5-1.0s",
+        "animate": true,
+        "label": "Validation speed",
+        "note": "Reduced from ~3.0s by redesigning flows and data handling"
+      }
+    ]
+  },
+  "featured": {
+    "title": "Featured Work",
+    "project": {
+      "name": "AGF Ticketing & Operations Platform",
+      "meta": "Go, SQLite, REST APIs, LAN/Wi-Fi, Windows scripting, NanoPi",
+      "context": "End-to-end ticketing and operations software for ferry stations handling high daily passenger volume.",
+      "role": "Role: Sole developer from architecture to production operations",
+      "constraints": [
+        "Intermittent network connectivity across stations required stable offline-first behavior.",
+        "Non-technical operators needed a simple flow with minimal setup overhead.",
+        "The system had to support sudden peak load without slowing boarding operations."
+      ],
+      "tradeoffs": [
+        "Chose SQLite + disciplined sync strategy over distributed complexity to reduce operational risk.",
+        "Prioritized deterministic workflows and recoverability over feature-heavy UX.",
+        "Built custom desktop tooling for local reliability instead of purely web-based access."
+      ],
+      "architecture": [
+        "TicketSeller app for station sales and on-site transaction handling",
+        "AGF Console for admin, reporting, and operations controls",
+        "Self-hosted services with backup/restore paths and watchdog monitoring"
+      ],
+      "tech_chips": [
+        "Go",
+        "SQLite",
+        "REST API",
+        "Windows App",
+        "LAN/Wi-Fi",
+        "NanoPi",
+        "PowerShell"
+      ],
+      "links": {
+        "case_study": "",
+        "repo": "",
+        "demo": ""
+      },
+      "image": ""
+    }
+  },
+  "more_work": {
+    "title": "More Work",
+    "subtitle": "Recent builds and delivery outcomes",
+    "items": [
+      {
+        "name": "AI-assisted Business Dashboard",
+        "meta": "Honest Agency, 2024",
+        "desc": "Delivered analytics and CRM reporting prototypes, balancing speed, cost, and maintainability for stakeholder goals."
+      },
+      {
+        "name": "WordPress Service Platform",
+        "meta": "Freelance, 2024",
+        "desc": "Built and launched a WordPress website with custom PHP extensions and workflow-specific integrations."
+      },
+      {
+        "name": "Telegram Automation Campaign",
+        "meta": "Freelance, 2024",
+        "desc": "Implemented a bot campaign that reached around 1,500 participants in roughly two weeks."
+      }
+    ]
+  },
+  "experience": {
+    "title": "Experience",
+    "subtitle": "Product ownership, engineering, and delivery",
+    "items": [
+      {
+        "date": "Oct 2025 - Present",
+        "role": "Software Engineer (Sole Developer) - An Giang Ferry JSC",
+        "desc": "Building and operating ticketing + operations systems for multi-station ferry services under high daily traffic."
+      },
+      {
+        "date": "Sep 2024 - Dec 2024",
+        "role": "Application Developer Intern - Honest Agency (Canada)",
+        "desc": "Contributed to AI-assisted dashboards and took PM-style ownership in requirements, scope, and weekly delivery planning."
+      },
+      {
+        "date": "Apr 2024 - Jun 2024",
+        "role": "WordPress Developer (Freelance) - Check Unlock VN",
+        "desc": "Delivered a production WordPress stack with custom automation and Telegram bot integration."
+      }
+    ]
+  },
+  "skills": {
+    "title": "Skills",
+    "items": [
+      {
+        "key": "Languages",
+        "value": "Go, JavaScript, SQL, PHP"
+      },
+      {
+        "key": "Frontend",
+        "value": "React, HTML, CSS"
+      },
+      {
+        "key": "Backend",
+        "value": "REST APIs, offline sync, service design"
+      },
+      {
+        "key": "Databases",
+        "value": "SQLite, PostgreSQL"
+      },
+      {
+        "key": "Systems",
+        "value": "Windows scripting, embedded Linux"
+      },
+      {
+        "key": "Operations",
+        "value": "Backup/restore, failover, watchdog monitoring"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "Open to engineering opportunities",
+    "cta": "If you need a practical engineer who can own end-to-end delivery, let's connect.",
+    "links": [
+      {
+        "label": "Email",
+        "href": "mailto:tutranz0101@gmail.com"
+      },
+      {
+        "label": "GitHub",
+        "href": "https://github.com/tutranz0101"
+      }
+    ]
+  },
+  "footer": {
+    "note": "Built with vanilla HTML/CSS/JS. EN/VI content delivered from JSON with graceful fallback."
+  }
+}

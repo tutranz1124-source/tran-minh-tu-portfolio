@@ -1,0 +1,50 @@
+:root {
+  --bg: #000000;
+  --card: #05070c;
+  --cardInner: #070b16;
+  --border: #1f2a40;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --cyan: #22d3ee;
+  --violet: #a78bfa;
+  --mint: #a7f3d0;
+
+  --r-card: 28px;
+  --r-card-sm: 24px;
+  --r-inner: 20px;
+  --r-pill: 999px;
+
+  --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.28);
+  --glow-cyan: 0 0 18px rgba(34, 211, 238, 0.12);
+
+  --nav-h: 60px;
+
+  --s-4: 4px;
+  --s-8: 8px;
+  --s-12: 12px;
+  --s-16: 16px;
+  --s-20: 20px;
+  --s-24: 24px;
+  --s-28: 28px;
+  --s-32: 32px;
+  --s-40: 40px;
+  --s-48: 48px;
+  --s-56: 56px;
+  --s-64: 64px;
+
+  --pad-x: clamp(16px, 4vw, 48px);
+
+  --h1: clamp(34px, 3.6vw, 56px);
+  --h2: clamp(20px, 2.2vw, 30px);
+  --h3: clamp(14px, 1.2vw, 16px);
+  --body: clamp(14px, 1.1vw, 16px);
+
+  --duration-base: 260ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (max-width: 639px) {
+  :root {
+    --nav-h: 56px;
+  }
+}

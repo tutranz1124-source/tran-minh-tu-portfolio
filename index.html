@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Tu Minh Tran portfolio">
+  <title>Tu Minh Tran | Portfolio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/swiper@12/swiper-bundle.min.css">
+
+  <link rel="stylesheet" href="./src/styles/tokens.css">
+  <link rel="stylesheet" href="./src/styles/base.css">
+  <link rel="stylesheet" href="./src/styles/layout.css">
+  <link rel="stylesheet" href="./src/styles/components.css">
+</head>
+<body>
+  <canvas id="bg-canvas" class="bg-layer" aria-hidden="true"></canvas>
+
+  <a class="skip-link u-sr-only u-sr-only--focusable" href="#main">Skip to content</a>
+
+  <header class="navbar" id="navbar"></header>
+
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <div class="u-sr-only" id="sr-live" aria-live="polite" aria-atomic="true"></div>
+
+  <main class="main" id="main" tabindex="-1">
+    <div class="container" id="app"></div>
+  </main>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
