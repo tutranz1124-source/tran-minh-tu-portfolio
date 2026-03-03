@@ -51,23 +51,6 @@ function createActionButton({ label, href, kind = "secondary" }) {
   }, [label]);
 }
 
-function createRollingTitle(text, id) {
-  const safeText = (text || "").trim() || "Experience";
-  const title = el("h2", "rolling-title", { id, "aria-label": safeText, tabindex: "0" });
-  const sr = el("span", "u-sr-only", {}, [safeText]);
-  const visual = el("span", "rolling-title__visual", { "aria-hidden": "true" });
-
-  Array.from(safeText).forEach((char, index) => {
-    const cell = el("span", `rolling-title__cell${char === " " ? " is-space" : ""}`);
-    cell.style.setProperty("--roll-index", String(index));
-    cell.appendChild(el("span", "rolling-title__char", {}, [char === " " ? "\u00a0" : char]));
-    visual.appendChild(cell);
-  });
-
-  title.append(sr, visual);
-  return title;
-}
-
 function createSkeleton() {
   const fragment = document.createDocumentFragment();
   fragment.appendChild(
@@ -233,7 +216,6 @@ function createExperienceSection(content, lang) {
 
 function createExperienceCarouselSection(content, lang) {
   const experienceItems = content.experience?.items ?? [];
-  const experienceTitle = content.experience?.title ?? (lang === "vi" ? "Kinh nghiem" : "Experience");
   const works = content.more_work?.items ?? [];
   if (!experienceItems.length) {
     return null;
@@ -242,7 +224,7 @@ function createExperienceCarouselSection(content, lang) {
 
   const section = el("section", "section reveal reveal--section", { id: "experience" });
   const card = el("article", "card list-card reveal", { "aria-labelledby": "experience-carousel-title" });
-  card.appendChild(createRollingTitle(experienceTitle, "experience-carousel-title"));
+  card.appendChild(el("h2", "", { id: "experience-carousel-title" }, [lang === "vi" ? "Experience Carousel Test" : "Experience Carousel Test"]));
   card.appendChild(
     el(
       "p",
