@@ -22,18 +22,6 @@ export function validateContent(content) {
     errors.push("impact.metrics should be array");
   }
 
-  const project = content.featured?.project;
-  if (!project || typeof project !== "object") {
-    errors.push("featured.project missing or invalid");
-  } else {
-    if (project.constraints && !Array.isArray(project.constraints)) {
-      errors.push("featured.project.constraints should be array");
-    }
-    if (project.tradeoffs && !Array.isArray(project.tradeoffs)) {
-      errors.push("featured.project.tradeoffs should be array");
-    }
-  }
-
   return {
     ok: errors.length === 0,
     errors,

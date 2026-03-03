@@ -44,12 +44,6 @@
   }
 }
 
-.featured-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-  gap: var(--s-24);
-}
-
 .bottom-bento {
   display: grid;
   grid-template-columns: minmax(0, 1.83fr) minmax(0, 1.33fr) minmax(0, 1fr);
@@ -58,14 +52,12 @@
 
 .card,
 .topband > *,
-.featured-grid > *,
 .bottom-bento > * {
   min-width: 0;
 }
 
 .hero,
 .impact,
-.featured,
 .more-work,
 .experience,
 .skills-contact,
@@ -87,11 +79,6 @@
   .topband {
     grid-template-columns: minmax(0, 1fr);
     gap: 22px;
-  }
-
-  .featured-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
   }
 
   .bottom-bento {
@@ -122,7 +109,6 @@
   }
 
   .topband,
-  .featured-grid,
   .bottom-bento {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;

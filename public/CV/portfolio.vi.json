@@ -60,45 +60,6 @@
       }
     ]
   },
-  "featured": {
-    "title": "Dự án nổi bật",
-    "project": {
-      "name": "Nền tảng bán vé & vận hành AGF",
-      "meta": "Go, SQLite, REST APIs, LAN/Wi-Fi, Windows scripting, NanoPi",
-      "context": "Hệ thống bán vé và vận hành end-to-end cho các bến phà với lưu lượng hành khách cao mỗi ngày.",
-      "role": "Vai trò: Sole developer từ kiến trúc đến vận hành production",
-      "constraints": [
-        "Kết nối mạng giữa các bến không ổn định, bắt buộc hệ thống phải vận hành tốt theo hướng offline-first.",
-        "Người vận hành không chuyên kỹ thuật nên luồng thao tác phải đơn giản và dễ triển khai.",
-        "Phải chịu tải đột biến vào giờ cao điểm mà không làm chậm quy trình lên tàu."
-      ],
-      "tradeoffs": [
-        "Chọn SQLite + chiến lược đồng bộ có kiểm soát để giảm rủi ro vận hành thay vì kiến trúc phân tán phức tạp.",
-        "Ưu tiên workflow quyết định được và khả năng phục hồi hơn UI giàu tính năng.",
-        "Phát triển công cụ desktop chuyên biệt để đảm bảo ổn định cục bộ thay vì phụ thuộc hoàn toàn vào web."
-      ],
-      "architecture": [
-        "Ứng dụng TicketSeller cho bán vé và giao dịch tại bến",
-        "AGF Console cho quản trị, báo cáo và điều hành",
-        "Dịch vụ self-hosted có backup/restore và watchdog giám sát"
-      ],
-      "tech_chips": [
-        "Go",
-        "SQLite",
-        "REST API",
-        "Windows App",
-        "LAN/Wi-Fi",
-        "NanoPi",
-        "PowerShell"
-      ],
-      "links": {
-        "case_study": "",
-        "repo": "",
-        "demo": ""
-      },
-      "image": ""
-    }
-  },
   "more_work": {
     "title": "Dự án khác",
     "subtitle": "Một số sản phẩm đã triển khai gần đây",
@@ -189,4 +150,3 @@
     "note": "Xây bằng vanilla HTML/CSS/JS. Nội dung EN/VI tải từ JSON với cơ chế fallback an toàn."
   }
 }
-

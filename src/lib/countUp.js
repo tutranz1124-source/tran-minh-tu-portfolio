@@ -49,17 +49,9 @@ export function initCountUp(containerEl) {
     return;
   }
 
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const targets = Array.from(containerEl.querySelectorAll("[data-countup]"));
 
   if (targets.length === 0) {
-    return;
-  }
-
-  if (reduced) {
-    targets.forEach((target) => {
-      target.textContent = target.dataset.display || target.textContent;
-    });
     return;
   }
 

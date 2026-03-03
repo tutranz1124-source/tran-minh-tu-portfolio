@@ -1,8 +1,38 @@
+const SVG_NS = "http://www.w3.org/2000/svg";
+const SVG_TAGS = new Set([
+  "svg",
+  "path",
+  "circle",
+  "rect",
+  "line",
+  "polyline",
+  "polygon",
+  "g",
+  "defs",
+  "linearGradient",
+  "radialGradient",
+  "stop",
+  "clipPath",
+  "mask",
+  "symbol",
+  "use",
+  "ellipse",
+]);
+
+function isSvgTag(tag) {
+  return SVG_TAGS.has(tag);
+}
+
 export function el(tag, className = "", attrs = {}, children = []) {
-  const node = document.createElement(tag);
+  const svgNode = isSvgTag(tag);
+  const node = svgNode ? document.createElementNS(SVG_NS, tag) : document.createElement(tag);
 
   if (className) {
-    node.className = className;
+    if (svgNode) {
+      node.setAttribute("class", className);
+    } else {
+      node.className = className;
+    }
   }
 
   Object.entries(attrs).forEach(([key, value]) => {
@@ -15,7 +45,7 @@ export function el(tag, className = "", attrs = {}, children = []) {
       });
       return;
     }
-    if (key in node && key !== "role") {
+    if (!svgNode && key in node && key !== "role") {
       node[key] = value;
       return;
     }

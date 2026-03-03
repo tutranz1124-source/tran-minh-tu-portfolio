@@ -13,7 +13,6 @@ const state = {
 };
 
 const listeners = new Set();
-let mediaQueryList;
 
 export function getState() {
   return { ...state };
@@ -53,24 +52,8 @@ function normalizeLang(value) {
   return value === "vi" ? "vi" : "en";
 }
 
-function setReducedMotionPreference(matches) {
-  setState({ reducedMotion: matches });
-}
-
 export function initStore() {
   const storedLang = normalizeLang(localStorage.getItem(STATE_KEY));
   state.lang = storedLang;
-
-  mediaQueryList = window.matchMedia("(prefers-reduced-motion: reduce)");
-  state.reducedMotion = mediaQueryList.matches;
-
-  const onChange = (event) => {
-    setReducedMotionPreference(event.matches);
-  };
-
-  if (typeof mediaQueryList.addEventListener === "function") {
-    mediaQueryList.addEventListener("change", onChange);
-  } else {
-    mediaQueryList.addListener(onChange);
-  }
+  state.reducedMotion = false;
 }

@@ -48,9 +48,13 @@ export default function (el, config) {
     COLORFUL: true,
     COLOR_UPDATE_SPEED: 10,
     POINTER_COLOR_MULTIPLIER: 0.15,
+    POINTER_DELTA_LIMIT: 0.015,
     MONOCHROME: false,
     MONO_COLOR: { r: 235, g: 235, b: 235 },
     PAUSED: false,
+    SUSPEND_WHEN_PAUSED: false,
+    PAUSE_POLL_MS: 250,
+    PIXEL_RATIO_CAP: 0,
     BACK_COLOR: { r: 0, g: 0, b: 0 },
     TRANSPARENT: false,
     BLOOM: true,
@@ -1132,12 +1136,28 @@ export default function (el, config) {
   let colorUpdateTimer = 0.0
   update()
 
+  function scheduleNextFrame() {
+    if (config.PAUSED && config.SUSPEND_WHEN_PAUSED) {
+      const pollRaw = Number(config.PAUSE_POLL_MS)
+      const pausePollMs = Number.isFinite(pollRaw) ? Math.max(120, pollRaw) : 250
+      setTimeout(() => requestAnimationFrame(update), pausePollMs)
+      return
+    }
+    requestAnimationFrame(update)
+  }
+
   function update() {
-    const dt = calcDeltaTime()
     if (resizeCanvas()) {
       initFramebuffers()
     }
 
+    if (config.PAUSED && config.SUSPEND_WHEN_PAUSED) {
+      lastUpdateTime = Date.now()
+      scheduleNextFrame()
+      return
+    }
+
+    const dt = calcDeltaTime()
     updateColors(dt)
     applyInputs()
     if (!config.PAUSED) {
@@ -1145,7 +1165,7 @@ export default function (el, config) {
     }
 
     render(null)
-    requestAnimationFrame(update)
+    scheduleNextFrame()
   }
 
   function calcDeltaTime() {
@@ -1575,8 +1595,8 @@ export default function (el, config) {
     pointer.prevTexcoordY = pointer.texcoordY
     pointer.texcoordX = posX / canvas.width
     pointer.texcoordY = 1.0 - posY / canvas.height
-    pointer.deltaX = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX)
-    pointer.deltaY = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY)
+    pointer.deltaX = clampPointerDelta(correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX))
+    pointer.deltaY = clampPointerDelta(correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY))
     if (config.TRIGGER === 'hover') {
       if (!pointer.color || !Number.isFinite(pointer.color.r) || !Number.isFinite(pointer.color.g) || !Number.isFinite(pointer.color.b) || !config.COLORFUL) {
         pointer.color = generateColor()
@@ -1608,6 +1628,15 @@ export default function (el, config) {
     }
 
     return delta
+  }
+
+  function clampPointerDelta(delta) {
+    const rawLimit = Number(config.POINTER_DELTA_LIMIT)
+    if (!Number.isFinite(rawLimit) || rawLimit <= 0) {
+      return delta
+    }
+    const limit = Math.min(rawLimit, 1)
+    return Math.max(-limit, Math.min(limit, delta))
   }
 
   function generateColor() {
@@ -1721,7 +1750,10 @@ export default function (el, config) {
   }
 
   function scaleByPixelRatio(input) {
-    const pixelRatio = window.devicePixelRatio || 1
+    const ratioRaw = window.devicePixelRatio || 1
+    const capRaw = Number(config.PIXEL_RATIO_CAP)
+    const cap = Number.isFinite(capRaw) && capRaw > 0 ? capRaw : Number.POSITIVE_INFINITY
+    const pixelRatio = Math.min(ratioRaw, cap)
     return Math.floor(input * pixelRatio)
   }
 
@@ -1748,6 +1780,7 @@ export default function (el, config) {
       || Object.prototype.hasOwnProperty.call(patch, 'DYE_RESOLUTION')
       || Object.prototype.hasOwnProperty.call(patch, 'BLOOM_RESOLUTION')
       || Object.prototype.hasOwnProperty.call(patch, 'SUNRAYS_RESOLUTION')
+      || Object.prototype.hasOwnProperty.call(patch, 'PIXEL_RATIO_CAP')
     )
 
     const needsKeywords = (

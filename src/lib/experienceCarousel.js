@@ -5,6 +5,9 @@ let swiperInstance = null;
 let carouselResizeObserver = null;
 let carouselResizeHandler = null;
 let carouselResizeRaf = 0;
+let carouselProgressRaf = 0;
+let carouselLayoutKey = "";
+let slideAbsCache = new WeakMap();
 
 function loadSwiperScript() {
   if (window.Swiper) {
@@ -37,7 +40,12 @@ function loadSwiperScript() {
 function updateSlideVars(swiper) {
   swiper.slides.forEach((slide) => {
     const abs = Math.min(Math.abs(slide.progress || 0), 1);
-    slide.style.setProperty("--abs", abs.toFixed(3));
+    const absValue = abs.toFixed(3);
+    if (slideAbsCache.get(slide) === absValue) {
+      return;
+    }
+    slideAbsCache.set(slide, absValue);
+    slide.style.setProperty("--abs", absValue);
   });
 }
 
@@ -53,12 +61,25 @@ function updateStageBackground(swiper, stageEl) {
     return;
   }
 
-  stageEl.style.setProperty("--stage-bg-1", colors[0].trim());
-  stageEl.style.setProperty("--stage-bg-2", colors[1].trim());
+  const bg1 = colors[0].trim();
+  const bg2 = colors[1].trim();
+  if (stageEl.style.getPropertyValue("--stage-bg-1") !== bg1) {
+    stageEl.style.setProperty("--stage-bg-1", bg1);
+  }
+  if (stageEl.style.getPropertyValue("--stage-bg-2") !== bg2) {
+    stageEl.style.setProperty("--stage-bg-2", bg2);
+  }
 }
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+function setStyleVarIfChanged(stageEl, name, value) {
+  if (stageEl.style.getPropertyValue(name) === value) {
+    return;
+  }
+  stageEl.style.setProperty(name, value);
 }
 
 function applyResponsiveCarouselVars(stageEl) {
@@ -79,13 +100,20 @@ function applyResponsiveCarouselVars(stageEl) {
   const arrowWidth = Math.round(clamp(arrowHeight * 0.48, 26, 48));
   const arrowIcon = Math.round(clamp(arrowWidth * 0.34, 9, 15));
 
-  stageEl.style.setProperty("--exp-slide-w", `${slideWidth}px`);
-  stageEl.style.setProperty("--exp-slide-h", `${slideHeight}px`);
-  stageEl.style.setProperty("--exp-arrow-w", `${arrowWidth}px`);
-  stageEl.style.setProperty("--exp-arrow-h", `${arrowHeight}px`);
-  stageEl.style.setProperty("--exp-arrow-icon", `${arrowIcon}px`);
+  setStyleVarIfChanged(stageEl, "--exp-slide-w", `${slideWidth}px`);
+  setStyleVarIfChanged(stageEl, "--exp-slide-h", `${slideHeight}px`);
+  setStyleVarIfChanged(stageEl, "--exp-arrow-w", `${arrowWidth}px`);
+  setStyleVarIfChanged(stageEl, "--exp-arrow-h", `${arrowHeight}px`);
+  setStyleVarIfChanged(stageEl, "--exp-arrow-icon", `${arrowIcon}px`);
 
-  return stageWidth;
+  return {
+    stageWidth,
+    slideWidth,
+    slideHeight,
+    arrowWidth,
+    arrowHeight,
+    arrowIcon,
+  };
 }
 
 function coverflowForStageWidth(stageWidth) {
@@ -104,8 +132,23 @@ function updateCarouselLayout(swiper, stageEl) {
     return;
   }
 
-  const stageWidth = applyResponsiveCarouselVars(stageEl);
-  const nextEffect = coverflowForStageWidth(stageWidth);
+  const layout = applyResponsiveCarouselVars(stageEl);
+  const nextEffect = coverflowForStageWidth(layout.stageWidth);
+  const nextLayoutKey = [
+    layout.slideWidth,
+    layout.slideHeight,
+    layout.arrowWidth,
+    layout.arrowHeight,
+    layout.arrowIcon,
+    nextEffect.stretch,
+    nextEffect.depth,
+    nextEffect.modifier,
+  ].join("|");
+  if (nextLayoutKey === carouselLayoutKey) {
+    return;
+  }
+  carouselLayoutKey = nextLayoutKey;
+
   const currentEffect = swiper.params.coverflowEffect || {};
   const changed =
     currentEffect.stretch !== nextEffect.stretch
@@ -125,10 +168,31 @@ function updateCarouselLayout(swiper, stageEl) {
   updateStageBackground(swiper, stageEl);
 }
 
+function scheduleProgressUpdate(swiper) {
+  if (!swiper || swiper.destroyed) {
+    return;
+  }
+  if (carouselProgressRaf) {
+    return;
+  }
+
+  carouselProgressRaf = requestAnimationFrame(() => {
+    carouselProgressRaf = 0;
+    if (!swiper || swiper.destroyed) {
+      return;
+    }
+    updateSlideVars(swiper);
+  });
+}
+
 export function destroyExperienceCarousel() {
   if (carouselResizeRaf) {
     cancelAnimationFrame(carouselResizeRaf);
     carouselResizeRaf = 0;
+  }
+  if (carouselProgressRaf) {
+    cancelAnimationFrame(carouselProgressRaf);
+    carouselProgressRaf = 0;
   }
 
   if (carouselResizeObserver) {
@@ -145,6 +209,8 @@ export function destroyExperienceCarousel() {
     swiperInstance.destroy(true, true);
   }
   swiperInstance = null;
+  carouselLayoutKey = "";
+  slideAbsCache = new WeakMap();
 }
 
 export async function initExperienceCarousel(reducedMotion = false) {
@@ -158,8 +224,8 @@ export async function initExperienceCarousel(reducedMotion = false) {
 
   const slideCount = carouselEl.querySelectorAll(".swiper-slide").length;
   const canCycle = slideCount > 1;
-  const stageWidth = applyResponsiveCarouselVars(stageEl);
-  const initialEffect = coverflowForStageWidth(stageWidth);
+  const layout = applyResponsiveCarouselVars(stageEl);
+  const initialEffect = coverflowForStageWidth(layout.stageWidth);
 
   try {
     const SwiperRef = await loadSwiperScript();
@@ -169,15 +235,15 @@ export async function initExperienceCarousel(reducedMotion = false) {
 
     swiperInstance = new SwiperRef(carouselEl, {
       effect: "coverflow",
-      grabCursor: true,
+      grabCursor: canCycle,
       centeredSlides: true,
       slidesPerView: "auto",
       loop: false,
       rewind: canCycle,
       watchOverflow: false,
       allowTouchMove: canCycle,
-      speed: reducedMotion ? 0 : 1200,
-      watchSlidesProgress: true,
+      speed: reducedMotion ? 0 : 900,
+      watchSlidesProgress: canCycle,
       coverflowEffect: initialEffect,
       navigation: {
         nextEl: ".exp-carousel-next",
@@ -193,7 +259,7 @@ export async function initExperienceCarousel(reducedMotion = false) {
           updateStageBackground(sw, stageEl);
         },
         progress(sw) {
-          updateSlideVars(sw);
+          scheduleProgressUpdate(sw);
         },
         slideChangeTransitionStart(sw) {
           updateStageBackground(sw, stageEl);

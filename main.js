@@ -1,5 +1,5 @@
-import { getLastGoodContent, loadContent } from "./src/lib/fetchContent.js";
-import { initFluidBackground } from "./src/lib/fluidBackground.js";
+import { getLastGoodContent, loadContent, prefetchContent } from "./src/lib/fetchContent.js";
+import { initFluidBackground, setFluidPlayMode } from "./src/lib/fluidBackground.js";
 import { initExperienceCarousel } from "./src/lib/experienceCarousel.js";
 import { initReveal } from "./src/lib/motion.js";
 import { initActiveSectionObserver } from "./src/lib/navActive.js";
@@ -9,7 +9,9 @@ import { showToast } from "./src/lib/toast.js";
 import { trapFocus } from "./src/lib/a11yFocusTrap.js";
 import { validateContent } from "./src/lib/validateContent.js";
 
-const SECTION_IDS = ["top", "experience", "skills", "contact"];
+const SECTION_IDS = ["top", "experience", "skills"];
+const BOOT_LOADER_ANIM_MS = 2000;
+const BOOT_LOADER_TIMEOUT_MS = 12000;
 
 let observerCleanup = null;
 let focusTrapCleanup = null;
@@ -24,6 +26,12 @@ let popupGhostEl = null;
 let popupSourceEl = null;
 let popupMotionStyle = "zoom";
 let popupMotionToken = 0;
+let contactFabOpen = false;
+let loaderDismissed = false;
+let loaderFallbackTimer = 0;
+let loaderBootReady = false;
+let loaderAnimationDone = false;
+let loaderAnimationTimer = 0;
 
 const POPUP_OPEN_BACKDROP_DURATION = 200;
 const POPUP_OPEN_PANEL_DURATION = 280;
@@ -38,6 +46,68 @@ const POPUP_SHARED_EASING = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const POPUP_SHARED_FADE_DURATION = 160;
 const POPUP_SHARED_GHOST_FADE_DURATION = 120;
 const POPUP_SHARED_OVERLAY_DURATION = 180;
+
+function dismissBootLoader(force = false) {
+  if (loaderDismissed) {
+    return;
+  }
+
+  const loader = document.getElementById("page-loader");
+  if (!loader) {
+    loaderDismissed = true;
+    return;
+  }
+
+  if (!force && (!loaderBootReady || !loaderAnimationDone)) {
+    return;
+  }
+
+  loaderDismissed = true;
+
+  if (loaderFallbackTimer) {
+    window.clearTimeout(loaderFallbackTimer);
+    loaderFallbackTimer = 0;
+  }
+  if (loaderAnimationTimer) {
+    window.clearTimeout(loaderAnimationTimer);
+    loaderAnimationTimer = 0;
+  }
+
+  loader.classList.add("is-hiding");
+  const removeLoader = () => {
+    loader.remove();
+  };
+  loader.addEventListener("transitionend", removeLoader, { once: true });
+  window.setTimeout(removeLoader, 520);
+}
+
+function markBootReady() {
+  loaderBootReady = true;
+  dismissBootLoader();
+}
+
+function initBootLoaderGate() {
+  const loader = document.getElementById("page-loader");
+  if (!loader) {
+    loaderAnimationDone = true;
+    return;
+  }
+
+  const completeAnimationGate = () => {
+    if (loaderAnimationDone) {
+      return;
+    }
+    loaderAnimationDone = true;
+    dismissBootLoader();
+  };
+
+  const ringProgress = loader.querySelector(".page-loader__progress");
+  if (ringProgress instanceof SVGElement) {
+    ringProgress.addEventListener("animationend", completeAnimationGate, { once: true });
+  }
+
+  loaderAnimationTimer = window.setTimeout(completeAnimationGate, BOOT_LOADER_ANIM_MS);
+}
 
 function setScrollBehavior(reducedMotion) {
   document.documentElement.style.scrollBehavior = reducedMotion ? "auto" : "smooth";
@@ -193,6 +263,48 @@ function applyDrawerState(isOpen) {
   } else {
     document.body.style.overflow = "";
   }
+}
+
+function applyContactFabState(isOpen) {
+  const fab = document.getElementById("contact-fab");
+  if (!(fab instanceof HTMLElement)) {
+    contactFabOpen = false;
+    return;
+  }
+
+  const trigger = fab.querySelector(".contact-fab__trigger");
+  const actions = fab.querySelector(".contact-fab__actions");
+
+  fab.classList.toggle("is-open", isOpen);
+  trigger?.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  actions?.setAttribute("aria-hidden", isOpen ? "false" : "true");
+}
+
+function setContactFabOpen(isOpen) {
+  contactFabOpen = Boolean(isOpen);
+  applyContactFabState(contactFabOpen);
+}
+
+function shouldLockPlayScroll() {
+  return window.matchMedia("(max-width: 1023px), (pointer: coarse)").matches;
+}
+
+function applyPlayModeScrollLock(isPlayMode) {
+  const shouldLock = Boolean(isPlayMode) && shouldLockPlayScroll();
+  document.documentElement.classList.toggle("is-play-scroll-locked", shouldLock);
+
+  if (shouldLock) {
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+    document.body.style.touchAction = "none";
+    return;
+  }
+
+  document.documentElement.style.overflow = "";
+  document.body.style.overflow = "";
+  document.body.style.overscrollBehavior = "";
+  document.body.style.touchAction = "";
 }
 
 function scrollToSection(sectionId) {
@@ -666,6 +778,19 @@ function announceLang(lang) {
       : "Switched to English";
 }
 
+function scheduleLanguagePrefetch(activeLang) {
+  const nextLang = activeLang === "vi" ? "en" : "vi";
+  const run = () => {
+    prefetchContent(nextLang).catch(() => {});
+  };
+
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(run, { timeout: 1500 });
+  } else {
+    window.setTimeout(run, 240);
+  }
+}
+
 async function loadLanguage(nextLang) {
   const requestSeq = ++languageRequestSeq;
   const previous = getState();
@@ -697,6 +822,7 @@ async function loadLanguage(nextLang) {
     });
 
     announceLang(nextLang);
+    scheduleLanguagePrefetch(nextLang);
     return;
   } catch (error) {
     if (error?.name === "AbortError") {
@@ -719,6 +845,7 @@ async function loadLanguage(nextLang) {
         cvAvailable: fallbackCv,
         lang: previous.lang,
       });
+      scheduleLanguagePrefetch(previous.lang);
     } else {
       setState({
         status: "error",
@@ -738,6 +865,26 @@ async function loadLanguage(nextLang) {
 
 function bindGlobalInteractions() {
   document.addEventListener("click", (event) => {
+    const contactFabToggle = event.target.closest("[data-contact-fab-toggle='true']");
+    if (contactFabToggle) {
+      event.preventDefault();
+      setContactFabOpen(!contactFabOpen);
+      return;
+    }
+
+    const contactFabAction = event.target.closest(".contact-fab__action");
+    if (contactFabAction) {
+      setContactFabOpen(false);
+      return;
+    }
+
+    if (contactFabOpen) {
+      const contactFab = document.getElementById("contact-fab");
+      if (contactFab && !contactFab.contains(event.target)) {
+        setContactFabOpen(false);
+      }
+    }
+
     const langBtn = event.target.closest(".navbar__lang-btn");
     if (langBtn) {
       const lang = langBtn.dataset.lang;
@@ -751,12 +898,14 @@ function bindGlobalInteractions() {
     if (playBtn) {
       closeWorkPopup();
       closeDrawer();
+      setContactFabOpen(false);
       setState({ playMode: !getState().playMode });
       return;
     }
 
     const menuBtn = event.target.closest("#drawer-toggle");
     if (menuBtn) {
+      setContactFabOpen(false);
       setState({ drawerOpen: !getState().drawerOpen });
       return;
     }
@@ -766,6 +915,7 @@ function bindGlobalInteractions() {
       event.preventDefault();
       const id = sectionLink.dataset.section;
       const drawerOpen = getState().drawerOpen;
+      setContactFabOpen(false);
       if (drawerOpen) {
         closeDrawer();
         window.setTimeout(() => scrollToSection(id), 90);
@@ -779,6 +929,7 @@ function bindGlobalInteractions() {
     if (workBtn) {
       const workIndex = Number.parseInt(workBtn.dataset.workOpen || "-1", 10);
       if (workIndex >= 0) {
+        setContactFabOpen(false);
         openWorkPopup(workIndex, workBtn);
       }
       return;
@@ -809,6 +960,7 @@ function bindGlobalInteractions() {
 
     if (event.key === "Escape") {
       closeWorkPopup();
+      setContactFabOpen(false);
     }
 
     if (event.key === "Escape" && getState().drawerOpen) {
@@ -838,12 +990,19 @@ function initSectionObserver() {
 function runPostRender(state) {
   setScrollBehavior(state.reducedMotion);
   applyDrawerState(state.drawerOpen);
+  if (state.playMode) {
+    setContactFabOpen(false);
+  } else {
+    applyContactFabState(contactFabOpen);
+  }
   document.getElementById("main")?.classList.toggle("main--play", state.playMode);
+  setFluidPlayMode(state.playMode);
   initNavIndicator();
   syncNavActive(state.activeSection);
   const popup = document.getElementById("work-popup");
-  if (!state.drawerOpen && (!popup || popup.classList.contains("u-hidden"))) {
-    document.body.style.overflow = "";
+  const popupClosed = !popup || popup.classList.contains("u-hidden");
+  if (!state.drawerOpen && popupClosed) {
+    applyPlayModeScrollLock(state.playMode);
   }
 
   const app = document.getElementById("app");
@@ -895,9 +1054,18 @@ function onStateChange(next) {
   if (prev.reducedMotion !== next.reducedMotion) {
     setScrollBehavior(next.reducedMotion);
   }
+
+  if (prev.playMode !== next.playMode) {
+    applyPlayModeScrollLock(next.playMode);
+  }
 }
 
 async function bootstrap() {
+  initBootLoaderGate();
+  loaderFallbackTimer = window.setTimeout(() => {
+    dismissBootLoader(true);
+  }, BOOT_LOADER_TIMEOUT_MS);
+
   initStore();
   bindGlobalInteractions();
   initFluidBackground();
@@ -908,6 +1076,14 @@ async function bootstrap() {
   runPostRender(getState());
 
   await loadLanguage(getState().lang);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      markBootReady();
+    });
+  });
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error("Bootstrap error:", error);
+  dismissBootLoader(true);
+});

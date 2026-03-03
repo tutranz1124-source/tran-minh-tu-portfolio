@@ -60,45 +60,6 @@
       }
     ]
   },
-  "featured": {
-    "title": "Featured Work",
-    "project": {
-      "name": "AGF Ticketing & Operations Platform",
-      "meta": "Go, SQLite, REST APIs, LAN/Wi-Fi, Windows scripting, NanoPi",
-      "context": "End-to-end ticketing and operations software for ferry stations handling high daily passenger volume.",
-      "role": "Role: Sole developer from architecture to production operations",
-      "constraints": [
-        "Intermittent network connectivity across stations required stable offline-first behavior.",
-        "Non-technical operators needed a simple flow with minimal setup overhead.",
-        "The system had to support sudden peak load without slowing boarding operations."
-      ],
-      "tradeoffs": [
-        "Chose SQLite + disciplined sync strategy over distributed complexity to reduce operational risk.",
-        "Prioritized deterministic workflows and recoverability over feature-heavy UX.",
-        "Built custom desktop tooling for local reliability instead of purely web-based access."
-      ],
-      "architecture": [
-        "TicketSeller app for station sales and on-site transaction handling",
-        "AGF Console for admin, reporting, and operations controls",
-        "Self-hosted services with backup/restore paths and watchdog monitoring"
-      ],
-      "tech_chips": [
-        "Go",
-        "SQLite",
-        "REST API",
-        "Windows App",
-        "LAN/Wi-Fi",
-        "NanoPi",
-        "PowerShell"
-      ],
-      "links": {
-        "case_study": "",
-        "repo": "",
-        "demo": ""
-      },
-      "image": ""
-    }
-  },
   "more_work": {
     "title": "More Work",
     "subtitle": "Recent builds and delivery outcomes",
@@ -189,4 +150,3 @@
     "note": "Built with vanilla HTML/CSS/JS. EN/VI content delivered from JSON with graceful fallback."
   }
 }
-

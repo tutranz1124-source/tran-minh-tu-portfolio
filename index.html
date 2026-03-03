@@ -17,6 +17,18 @@
   <link rel="stylesheet" href="./src/styles/components.css">
 </head>
 <body>
+  <div class="page-loader" id="page-loader" role="status" aria-live="polite" aria-label="Loading page">
+    <div class="page-loader__inner">
+      <span class="page-loader__ring-wrap" aria-hidden="true">
+        <svg class="page-loader__ring" viewBox="0 0 64 64">
+          <circle class="page-loader__track" cx="32" cy="32" r="26"></circle>
+          <circle class="page-loader__progress" cx="32" cy="32" r="26"></circle>
+        </svg>
+      </span>
+      <span class="page-loader__text">Loading</span>
+    </div>
+  </div>
+
   <canvas id="bg-canvas" class="bg-layer" aria-hidden="true"></canvas>
 
   <a class="skip-link u-sr-only u-sr-only--focusable" href="#main">Skip to content</a>

@@ -4,7 +4,6 @@ const NAV_ITEMS = [
   { id: "top", label: { en: "Top", vi: "\u0110\u1ea7u trang" } },
   { id: "experience", label: { en: "Experience", vi: "Kinh nghi\u1ec7m" } },
   { id: "skills", label: { en: "Skills", vi: "K\u1ef9 n\u0103ng" } },
-  { id: "contact", label: { en: "Contact", vi: "Li\u00ean h\u1ec7" } },
 ];
 
 function localizedLabel(labelMap, lang) {
@@ -51,6 +50,44 @@ function createActionButton({ label, href, kind = "secondary" }) {
   }, [label]);
 }
 
+function createCircleAction({ label, href, iconSvg, className = "", tip = "" }) {
+  const actionClass = className ? `contact-fab__action ${className}` : "contact-fab__action";
+  return el(
+    "a",
+    actionClass,
+    {
+      href,
+      target: href.startsWith("http") ? "_blank" : "",
+      rel: href.startsWith("http") ? "noopener noreferrer" : "",
+      "aria-label": label,
+      title: label,
+    },
+    [
+      el("span", "u-sr-only", {}, [label]),
+      el("span", "contact-fab__tip", { "aria-hidden": "true" }, [tip || label]),
+      iconSvg,
+    ],
+  );
+}
+
+function createRollingTitle(text, id, tag = "h2", extraClass = "") {
+  const safeText = (text || "").trim() || "Experience";
+  const className = extraClass ? `rolling-title ${extraClass}` : "rolling-title";
+  const title = el(tag, className, { id, tabindex: "0", "aria-label": safeText });
+  const srText = el("span", "u-sr-only", {}, [safeText]);
+  const visual = el("span", "rolling-title__visual", { "aria-hidden": "true" });
+
+  Array.from(safeText).forEach((char, index) => {
+    const cell = el("span", `rolling-title__cell${char === " " ? " is-space" : ""}`);
+    cell.style.setProperty("--roll-index", String(index));
+    cell.appendChild(el("span", "rolling-title__char", {}, [char === " " ? "\u00a0" : char]));
+    visual.appendChild(cell);
+  });
+
+  title.append(srText, visual);
+  return title;
+}
+
 function createSkeleton() {
   const fragment = document.createDocumentFragment();
   fragment.appendChild(
@@ -69,11 +106,11 @@ function createNavbarContent(state) {
   const { content, lang, activeSection, drawerOpen, playMode } = state;
   const root = el("div", "navbar__card");
   const inner = el("div", "navbar__inner", { role: "navigation", "aria-label": "Main navigation" });
+  const name = activeName(content, lang);
 
   inner.appendChild(
     el("div", "navbar__left", {}, [
-      el("div", "navbar__mark", { "aria-hidden": "true" }, ["TM"]),
-      el("p", "navbar__name", {}, [activeName(content, lang)]),
+      el("p", "navbar__name", { id: "navbar-name" }, [name]),
     ]),
   );
 
@@ -153,12 +190,14 @@ function createHeroCard(state, content) {
   const meta = content.meta ?? {};
   const hero = content.hero ?? {};
   const heroBadge = typeof hero.badge === "string" ? hero.badge.trim() : "";
+  const emailHref = meta.email ? `mailto:${meta.email}` : "";
+  const linkedinHref = safeHref(meta.links?.linkedin || "");
 
-  const card = el("article", "card hero reveal", { "aria-labelledby": "hero-title" });
+  const card = el("article", "card hero rolling-panel reveal", { "aria-labelledby": "hero-title" });
   if (heroBadge) {
     card.appendChild(el("span", "hero__badge", {}, [heroBadge]));
   }
-  card.appendChild(el("h1", "u-line-clamp-2", { id: "hero-title" }, [activeName(content, lang)]));
+  card.appendChild(createRollingTitle(activeName(content, lang), "hero-title", "h1"));
   card.appendChild(el("p", "hero__subtitle", {}, [meta.title ?? "Software Engineer / Full-stack Developer"]));
 
   if (hero.tagline) {
@@ -172,7 +211,13 @@ function createHeroCard(state, content) {
   card.appendChild(about);
 
   const cta = el("div", "hero__cta");
-  cta.appendChild(createActionButton({ label: lang === "vi" ? "Li\u00ean h\u1ec7" : "Contact", href: "#contact", kind: "primary" }));
+  cta.appendChild(
+    createActionButton({
+      label: lang === "vi" ? "Li\u00ean h\u1ec7" : "Contact",
+      href: emailHref || linkedinHref || "#top",
+      kind: "primary",
+    }),
+  );
   const cvHref = safeHref(meta.links?.cv || "");
   if (state.cvAvailable && cvHref) {
     cta.appendChild(createActionButton({ label: lang === "vi" ? "T\u1ea3i CV" : "Download CV", href: cvHref }));
@@ -221,10 +266,11 @@ function createExperienceCarouselSection(content, lang) {
     return null;
   }
   const carouselItems = experienceItems.slice(0, 3);
+  const sectionTitle = lang === "vi" ? "Experience Carousel Test" : "Experience Carousel Test";
 
   const section = el("section", "section reveal reveal--section", { id: "experience" });
-  const card = el("article", "card list-card reveal", { "aria-labelledby": "experience-carousel-title" });
-  card.appendChild(el("h2", "", { id: "experience-carousel-title" }, [lang === "vi" ? "Experience Carousel Test" : "Experience Carousel Test"]));
+  const card = el("article", "card list-card experience-carousel-panel rolling-panel reveal", { "aria-labelledby": "experience-carousel-title" });
+  card.appendChild(createRollingTitle(sectionTitle, "experience-carousel-title"));
   card.appendChild(
     el(
       "p",
@@ -279,7 +325,6 @@ function createExperienceCarouselSection(content, lang) {
               }
             : {},
           [
-            el("span", "exp-carousel__badge", {}, [lang === "vi" ? "Kinh nghiem" : "Experience"]),
             el("h3", "exp-carousel__title u-line-clamp-2", {}, [item.role ?? "Experience"]),
             el("p", "exp-carousel__meta u-line-clamp-1", {}, [item.date ?? ""]),
             el("p", "exp-carousel__desc u-line-clamp-3", {}, [item.desc ?? ""]),
@@ -304,8 +349,8 @@ function createExperienceCarouselSection(content, lang) {
 function createSkillsSection(content) {
   const skills = content.skills ?? {};
   const section = el("section", "section reveal reveal--section", { id: "skills" });
-  const card = el("article", "card list-card reveal", { "aria-labelledby": "skills-title" });
-  card.appendChild(el("h2", "", { id: "skills-title" }, [skills.title ?? "Skills"]));
+  const card = el("article", "card list-card rolling-panel reveal", { "aria-labelledby": "skills-title" });
+  card.appendChild(createRollingTitle(skills.title ?? "Skills", "skills-title"));
 
   const list = el("ul", "skills-vertical-grid");
   (skills.items ?? []).slice(0, 8).forEach((item) => {
@@ -321,44 +366,78 @@ function createSkillsSection(content) {
   return section;
 }
 
-function createContactSection(content, state) {
-  const contact = content.contact ?? {};
+function createFloatingContactMenu(content, state) {
+  const lang = state.lang;
   const meta = content.meta ?? {};
   const emailHref = meta.email ? `mailto:${meta.email}` : "";
   const linkedinHref = safeHref(meta.links?.linkedin || "");
   const cvHref = safeHref(meta.links?.cv || "");
 
-  const section = el("section", "section reveal reveal--section", { id: "contact" });
-  const card = el("article", "card contact-row reveal", { "aria-labelledby": "contact-title" });
+  const root = el("div", "contact-fab", { id: "contact-fab" });
+  const actions = el("div", "contact-fab__actions", { id: "contact-fab-actions", "aria-hidden": "true" });
 
-  const intro = el("div", "contact-row__intro", {}, [
-    el("h2", "", { id: "contact-title" }, [contact.title ?? "Contact"]),
-    el("p", "list-card__subtitle", {}, [contact.subtitle ?? "Open for collaboration"]),
-    el("p", "u-line-clamp-2", {}, [contact.cta ?? ""]),
-  ]);
-
-  const links = el("div", "contact-row__links");
   if (emailHref) {
-    links.appendChild(createActionButton({ label: "Email", href: emailHref }));
+    actions.appendChild(
+      createCircleAction({
+        label: "Email",
+        href: emailHref,
+        className: "contact-fab__action--email",
+        tip: "Email",
+        iconSvg: el("svg", "contact-fab__icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
+          el("path", "", { d: "M3 6.2c0-1.2 1-2.2 2.2-2.2h13.6c1.2 0 2.2 1 2.2 2.2v11.6c0 1.2-1 2.2-2.2 2.2H5.2c-1.2 0-2.2-1-2.2-2.2V6.2Zm2.2-.2L12 11l6.8-5H5.2Zm13.8 12V8.2l-6.4 4.7a1 1 0 0 1-1.2 0L5 8.2V18h14Z" }),
+        ]),
+      }),
+    );
   }
+
   if (linkedinHref) {
-    links.appendChild(createActionButton({ label: "LinkedIn", href: linkedinHref }));
-  } else {
-    links.appendChild(el("button", "btn btn--secondary", { type: "button", disabled: true }, ["LinkedIn"]));
+    actions.appendChild(
+      createCircleAction({
+        label: "LinkedIn",
+        href: linkedinHref,
+        className: "contact-fab__action--linkedin",
+        tip: "LinkedIn",
+        iconSvg: el("svg", "contact-fab__icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
+          el("path", "", { d: "M6.4 8.5a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2ZM4.7 10h3.3v9.7H4.7V10Zm5 0H13v1.4h.1c.5-.9 1.7-1.7 3.4-1.7 3 0 3.5 2 3.5 4.5v5.5h-3.3v-4.9c0-1.2 0-2.7-1.7-2.7-1.7 0-2 1.3-2 2.6v5h-3.3V10Z" }),
+        ]),
+      }),
+    );
   }
 
   if (state.cvAvailable && cvHref) {
-    links.appendChild(createActionButton({ label: "Download CV", href: cvHref }));
-  } else {
-    links.appendChild(el("button", "btn btn--secondary", { type: "button", disabled: true }, ["Download CV"]));
+    actions.appendChild(
+      createCircleAction({
+        label: lang === "vi" ? "Tai CV" : "Download CV",
+        href: cvHref,
+        className: "contact-fab__action--cv",
+        tip: "CV",
+        iconSvg: el("svg", "contact-fab__icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
+          el("path", "", { d: "M12 3c.6 0 1 .4 1 1v8.1l2.5-2.5a1 1 0 1 1 1.4 1.4l-4.2 4.2a1 1 0 0 1-1.4 0L7.1 11a1 1 0 1 1 1.4-1.4L11 12.1V4c0-.6.4-1 1-1ZM5.2 17h13.6A2.2 2.2 0 0 1 21 19.2v.6A2.2 2.2 0 0 1 18.8 22H5.2A2.2 2.2 0 0 1 3 19.8v-.6A2.2 2.2 0 0 1 5.2 17Zm0 2v1h13.6v-1H5.2Z" }),
+        ]),
+      }),
+    );
   }
 
-  const right = el("div", "contact-row__right", {}, [
-    el("div", "contact-row__actions", {}, [links]),
-  ]);
-  card.append(intro, right);
-  section.appendChild(card);
-  return section;
+  if (!actions.children.length) {
+    return null;
+  }
+
+  root.appendChild(actions);
+  root.appendChild(
+    el("button", "contact-fab__trigger", {
+      type: "button",
+      "aria-label": lang === "vi" ? "Mo menu lien he" : "Open contact menu",
+      "aria-controls": "contact-fab-actions",
+      "aria-expanded": "false",
+      dataset: { contactFabToggle: "true" },
+    }, [
+      el("svg", "contact-fab__icon contact-fab__icon--menu", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
+        el("path", "", { d: "M4 7.5c0-.6.4-1 1-1h14a1 1 0 1 1 0 2H5c-.6 0-1-.4-1-1Zm0 4.5c0-.6.4-1 1-1h14a1 1 0 1 1 0 2H5c-.6 0-1-.4-1-1Zm0 4.5c0-.6.4-1 1-1h14a1 1 0 1 1 0 2H5c-.6 0-1-.4-1-1Z" }),
+      ]),
+    ]),
+  );
+
+  return root;
 }
 
 function createSiteFooter(content) {
@@ -406,7 +485,10 @@ export function renderApp(state) {
       fragment.appendChild(experienceCarousel);
     }
     fragment.appendChild(createSkillsSection(state.content));
-    fragment.appendChild(createContactSection(state.content, state));
+    const contactFab = createFloatingContactMenu(state.content, state);
+    if (contactFab) {
+      fragment.appendChild(contactFab);
+    }
     fragment.appendChild(createSiteFooter(state.content));
     fragment.appendChild(createWorkPopup());
   }
