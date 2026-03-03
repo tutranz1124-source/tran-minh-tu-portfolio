@@ -69,14 +69,16 @@ function computeFluidPreset() {
   const memory = Number(navigator.deviceMemory || 8);
   const saveData = Boolean(navigator.connection?.saveData);
   const isMobile = window.matchMedia("(max-width: 820px)").matches;
-  const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const hasFinePointer = window.matchMedia("(any-pointer: fine)").matches;
+  const useDragTrigger = !hasFinePointer;
+  const trigger = useDragTrigger ? "click" : "hover";
 
   const lowTier = saveData || memory <= 4 || cores <= 4 || isMobile;
   const midTier = !lowTier && (memory <= 8 || cores <= 8);
 
   if (lowTier) {
     return {
-      TRIGGER: coarsePointer ? "click" : "hover",
+      TRIGGER: trigger,
       SIM_RESOLUTION: 64,
       DYE_RESOLUTION: 512,
       PRESSURE_ITERATIONS: 12,
@@ -89,7 +91,7 @@ function computeFluidPreset() {
 
   if (midTier) {
     return {
-      TRIGGER: coarsePointer ? "click" : "hover",
+      TRIGGER: trigger,
       SIM_RESOLUTION: 80,
       DYE_RESOLUTION: 640,
       PRESSURE_ITERATIONS: 13,
@@ -99,7 +101,7 @@ function computeFluidPreset() {
   }
 
   return {
-    TRIGGER: coarsePointer ? "click" : "hover",
+    TRIGGER: trigger,
     PIXEL_RATIO_CAP: 1.85,
   };
 }
@@ -170,79 +172,84 @@ export function setFluidPlayMode(isEnabled) {
 }
 
 export function initFluidBackground() {
-  const canvas = document.getElementById("bg-canvas");
-  if (!canvas) {
-    return;
-  }
-
-  document.getElementById("fluid-tuner")?.remove();
-  cleanupFluidListeners();
-  fluidApi = null;
-  if (idleInitToken !== null) {
-    if (typeof window.cancelIdleCallback === "function") {
-      window.cancelIdleCallback(idleInitToken);
-    } else {
-      clearTimeout(idleInitToken);
+  return new Promise((resolve) => {
+    const canvas = document.getElementById("bg-canvas");
+    if (!canvas) {
+      resolve(false);
+      return;
     }
-    idleInitToken = null;
-  }
 
-  const init = () => {
-    try {
-      const adaptiveConfig = computeFluidPreset();
-      const mergedConfig = {
-        ...DEFAULT_FLUID_CONFIG,
-        ...adaptiveConfig,
-      };
-      const api = WebGLFluid(canvas, {
-        ...mergedConfig,
-      });
-      fluidApi = api;
-      fluidBaseConfig = {
-        SPLAT_RADIUS: mergedConfig.SPLAT_RADIUS,
-        SPLAT_FORCE: mergedConfig.SPLAT_FORCE,
-        POINTER_DELTA_LIMIT: mergedConfig.POINTER_DELTA_LIMIT,
-        DENSITY_DISSIPATION: mergedConfig.DENSITY_DISSIPATION,
-        POINTER_COLOR_MULTIPLIER: mergedConfig.POINTER_COLOR_MULTIPLIER,
-      };
-      applyFluidPlayModeConfig();
-      applyCanvasViewport(canvas, api);
+    document.getElementById("fluid-tuner")?.remove();
+    cleanupFluidListeners();
+    fluidApi = null;
+    if (idleInitToken !== null) {
+      if (typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleInitToken);
+      } else {
+        clearTimeout(idleInitToken);
+      }
+      idleInitToken = null;
+    }
 
-      resizeHandler = () => {
-        if (resizeRaf) {
-          cancelAnimationFrame(resizeRaf);
-        }
-        resizeRaf = requestAnimationFrame(() => {
-          resizeRaf = 0;
-          applyCanvasViewport(canvas, api);
+    const init = () => {
+      try {
+        const adaptiveConfig = computeFluidPreset();
+        const mergedConfig = {
+          ...DEFAULT_FLUID_CONFIG,
+          ...adaptiveConfig,
+        };
+        const api = WebGLFluid(canvas, {
+          ...mergedConfig,
         });
-      };
-      window.addEventListener("resize", resizeHandler, { passive: true });
+        fluidApi = api;
+        fluidBaseConfig = {
+          SPLAT_RADIUS: mergedConfig.SPLAT_RADIUS,
+          SPLAT_FORCE: mergedConfig.SPLAT_FORCE,
+          POINTER_DELTA_LIMIT: mergedConfig.POINTER_DELTA_LIMIT,
+          DENSITY_DISSIPATION: mergedConfig.DENSITY_DISSIPATION,
+          POINTER_COLOR_MULTIPLIER: mergedConfig.POINTER_COLOR_MULTIPLIER,
+        };
+        applyFluidPlayModeConfig();
+        applyCanvasViewport(canvas, api);
 
-      visibilityHandler = () => {
-        api.setConfig?.({ PAUSED: document.hidden });
-      };
-      pageHideHandler = () => {
-        api.setConfig?.({ PAUSED: true });
-      };
-      pageShowHandler = () => {
-        api.setConfig?.({ PAUSED: document.hidden });
-      };
-      document.addEventListener("visibilitychange", visibilityHandler, { passive: true });
-      window.addEventListener("pagehide", pageHideHandler, { passive: true });
-      window.addEventListener("pageshow", pageShowHandler, { passive: true });
-      idleInitToken = null;
-    } catch (error) {
-      console.warn("Fluid background unavailable:", error);
-      canvas.style.background = "#000";
-      fluidApi = null;
-      idleInitToken = null;
+        resizeHandler = () => {
+          if (resizeRaf) {
+            cancelAnimationFrame(resizeRaf);
+          }
+          resizeRaf = requestAnimationFrame(() => {
+            resizeRaf = 0;
+            applyCanvasViewport(canvas, api);
+          });
+        };
+        window.addEventListener("resize", resizeHandler, { passive: true });
+
+        visibilityHandler = () => {
+          api.setConfig?.({ PAUSED: document.hidden });
+        };
+        pageHideHandler = () => {
+          api.setConfig?.({ PAUSED: true });
+        };
+        pageShowHandler = () => {
+          api.setConfig?.({ PAUSED: document.hidden });
+        };
+        document.addEventListener("visibilitychange", visibilityHandler, { passive: true });
+        window.addEventListener("pagehide", pageHideHandler, { passive: true });
+        window.addEventListener("pageshow", pageShowHandler, { passive: true });
+        idleInitToken = null;
+        resolve(true);
+      } catch (error) {
+        console.warn("Fluid background unavailable:", error);
+        canvas.style.background = "#000";
+        fluidApi = null;
+        idleInitToken = null;
+        resolve(false);
+      }
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      idleInitToken = window.requestIdleCallback(init, { timeout: 520 });
+    } else {
+      idleInitToken = window.setTimeout(init, 16);
     }
-  };
-
-  if (typeof window.requestIdleCallback === "function") {
-    idleInitToken = window.requestIdleCallback(init, { timeout: 520 });
-  } else {
-    idleInitToken = window.setTimeout(init, 16);
-  }
+  });
 }

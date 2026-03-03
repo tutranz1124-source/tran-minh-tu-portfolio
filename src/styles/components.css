@@ -63,7 +63,7 @@
   stroke-linecap: round;
   stroke-dasharray: 163.4;
   stroke-dashoffset: 163.4;
-  animation: page-loader-ring-progress 2000ms linear forwards;
+  animation: page-loader-ring-progress 1500ms linear forwards;
 }
 
 .page-loader__text {

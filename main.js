@@ -10,7 +10,7 @@ import { trapFocus } from "./src/lib/a11yFocusTrap.js";
 import { validateContent } from "./src/lib/validateContent.js";
 
 const SECTION_IDS = ["top", "experience", "skills"];
-const BOOT_LOADER_ANIM_MS = 2000;
+const BOOT_LOADER_ANIM_MS = 1500;
 const BOOT_LOADER_TIMEOUT_MS = 12000;
 
 let observerCleanup = null;
@@ -1068,7 +1068,7 @@ async function bootstrap() {
 
   initStore();
   bindGlobalInteractions();
-  initFluidBackground();
+  const fluidInitPromise = initFluidBackground();
 
   subscribe(onStateChange);
 
@@ -1076,6 +1076,7 @@ async function bootstrap() {
   runPostRender(getState());
 
   await loadLanguage(getState().lang);
+  await fluidInitPromise;
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       markBootReady();
