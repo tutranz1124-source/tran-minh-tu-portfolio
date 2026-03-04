@@ -3,102 +3,38 @@
     "name_en": "Tu Minh Tran",
     "name_vi": "Trần Minh Tú",
     "title": "Kỹ sư phần mềm / Lập trình viên Full-stack",
-    "location": "TP. Hồ Chí Minh, Việt Nam",
     "email": "tutranz0101@gmail.com",
-    "phone": "+84 0941 556 649",
     "links": {
-      "github": "https://github.com/tutranz0101",
       "linkedin": "https://www.linkedin.com/in/tu-tran-115350294/",
-      "portfolio": "",
       "cv": "./public/CV/cv.pdf"
     }
   },
   "hero": {
-    "badge": "Xây hệ thống vận hành ổn định trong điều kiện thực tế",
-    "tagline": "Tôi thiết kế và triển khai phần mềm end-to-end, ưu tiên độ tin cậy khi tải giao dịch lớn mỗi ngày.",
+    "badge": "",
+    "tagline": "Mình là kỹ sư phần mềm full-stack, làm end-to-end từ backend service tới desktop app và công cụ vận hành.",
     "about_paragraphs": [
-      "Tôi làm xuyên suốt từ backend service, ứng dụng desktop Windows đến công cụ vận hành tại hiện trường, với tinh thần ownership từ lập kế hoạch đến triển khai.",
-      "Trọng tâm của tôi là trade-off thực dụng: độ ổn định trước, quy trình rõ cho người vận hành, và khả năng phục hồi nhanh khi hạ tầng gặp sự cố."
-    ],
-    "current_line": "Hiện đang phụ trách toàn bộ nền tảng bán vé và vận hành phà AGF với vai trò sole developer."
-  },
-  "impact": {
-    "title": "Tác động",
-    "subtitle": "Kết quả đo được từ môi trường production",
-    "metrics": [
-      {
-        "value_num": 20000,
-        "value_suffix": "/ngày",
-        "display": "20k/ngày",
-        "animate": true,
-        "label": "Lượt vé trung bình",
-        "note": "Cao điểm đạt khoảng 40k vé/ngày"
-      },
-      {
-        "value_num": 7,
-        "value_suffix": " bến",
-        "display": "7 bến",
-        "animate": true,
-        "label": "Phạm vi triển khai",
-        "note": "Đưa vào vận hành toàn bộ các bến của AGF"
-      },
-      {
-        "value_num": 60,
-        "value_suffix": "+ người dùng",
-        "display": "60+ người dùng",
-        "animate": true,
-        "label": "Người dùng vận hành",
-        "note": "Nhân sự bán vé, điều hành và quản trị dùng hệ thống hằng ngày"
-      },
-      {
-        "value_num": 0.8,
-        "value_suffix": "s",
-        "display": "0.5-1.0s",
-        "animate": true,
-        "label": "Tốc độ soát vé",
-        "note": "Giảm từ ~3.0s sau khi tối ưu luồng và xử lý dữ liệu"
-      }
-    ]
-  },
-  "more_work": {
-    "title": "Dự án khác",
-    "subtitle": "Một số sản phẩm đã triển khai gần đây",
-    "items": [
-      {
-        "name": "Dashboard doanh nghiệp có hỗ trợ AI",
-        "meta": "Honest Agency, 2024",
-        "desc": "Xây prototype phân tích hiệu suất và CRM reporting, cân bằng giữa tốc độ bàn giao, chi phí và khả năng duy trì."
-      },
-      {
-        "name": "Nền tảng dịch vụ WordPress",
-        "meta": "Freelance, 2024",
-        "desc": "Thiết kế và triển khai website WordPress hoàn chỉnh, bổ sung tính năng PHP tùy biến theo quy trình vận hành thực tế."
-      },
-      {
-        "name": "Chiến dịch Telegram automation",
-        "meta": "Freelance, 2024",
-        "desc": "Xây bot automation thu hút khoảng 1.500 người tham gia trong khoảng 2 tuần."
-      }
+      "Hiện mình là sole developer tại Công ty CP Phà An Giang: xây dựng hệ thống bán soát vé, quản lý hệ thống và server tự chủ cho công ty.",
+      "Điểm mạnh của mình là thích ứng nhanh theo môi trường và yêu cầu dự án: từng tự học và triển khai từ web, low-code platform tới application, embedded/chip và server để đáp ứng đúng nhu cầu khách hàng."
     ]
   },
   "experience": {
     "title": "Kinh nghiệm",
-    "subtitle": "Ownership sản phẩm, kỹ thuật và bàn giao",
+    "subtitle": "Mô tả theo mục tiêu dự án + vai trò + kết quả",
     "items": [
       {
-        "date": "10/2025 - nay",
-        "role": "Kỹ sư phần mềm (Sole Developer) - Công ty CP Phà An Giang",
-        "desc": "Xây dựng và vận hành hệ thống bán vé + điều hành cho nhiều bến phà với lưu lượng giao dịch lớn mỗi ngày."
+        "date": "04/2024 - 06/2024, HCM",
+        "role": "Lập trình viên (Freelance)\nCheck Unlock VN",
+        "desc": "Mục tiêu: website WordPress phục vụ quảng cáo dịch vụ và chatbot Telegram phục vụ khách hàng.\nTech: WordPress, Python, JavaScript, Cloudflare Worker, PHP"
       },
       {
-        "date": "09/2024 - 12/2024",
-        "role": "Thực tập Lập trình viên Ứng dụng - Honest Agency (Canada)",
-        "desc": "Tham gia phát triển dashboard có hỗ trợ AI và đảm nhận vai trò PM-style trong thu thập yêu cầu, làm rõ phạm vi và điều phối mục tiêu theo tuần."
+        "date": "09/2024 - 12/2024, Canada",
+        "role": "Lập trình viên ứng dụng\nHonest Agency",
+        "desc": "Mục tiêu: xây dựng prototype cho dashboard AI.\nTech: Noloco, Airtable, Zoho Analytics"
       },
       {
-        "date": "04/2024 - 06/2024",
-        "role": "Lập trình viên WordPress (Freelance) - Check Unlock VN",
-        "desc": "Triển khai hệ thống WordPress production và tích hợp automation Telegram theo yêu cầu nghiệp vụ."
+        "date": "10/2025 - nay, An Giang",
+        "role": "Kỹ sư phần mềm\nCông ty CP Phà An Giang (AGF)",
+        "desc": "Mục tiêu: xây dựng hệ thống bán/soát vé với quy mô hoạt động lớn.\nTech: Go, SQLite, REST API, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)"
       }
     ]
   },
@@ -107,15 +43,15 @@
     "items": [
       {
         "key": "Ngôn ngữ",
-        "value": "Go, JavaScript, SQL, PHP"
+        "value": "Go, TypeScript, JavaScript, SQL, PHP, Python"
       },
       {
         "key": "Frontend",
-        "value": "React, HTML, CSS"
+        "value": "React, HTML/CSS, SCSS, Vanilla JS"
       },
       {
         "key": "Backend",
-        "value": "REST API, đồng bộ offline, thiết kế dịch vụ"
+        "value": "REST API, JWT Auth, net/http"
       },
       {
         "key": "Cơ sở dữ liệu",
@@ -123,7 +59,7 @@
       },
       {
         "key": "Hệ thống",
-        "value": "Windows scripting, embedded Linux"
+        "value": "Windows (PowerShell/.bat), Ubuntu, embedded Linux (NanoPi)"
       },
       {
         "key": "Vận hành",
@@ -131,22 +67,78 @@
       }
     ]
   },
-  "contact": {
-    "title": "Liên hệ",
-    "subtitle": "Sẵn sàng cho cơ hội kỹ thuật mới",
-    "cta": "Nếu bạn cần một kỹ sư thực dụng có thể đi trọn vòng đời sản phẩm, hãy kết nối với tôi.",
-    "links": [
+  "footer": {
+    "note": "Xây bằng vanilla HTML/CSS/JS"
+  },
+  "details_work": {
+    "items": [
       {
-        "label": "Email",
-        "href": "mailto:tutranz0101@gmail.com"
+        "name": "WordPress website + Telegram automation",
+        "meta": "Check Unlock VN, 04/2024 - 06/2024",
+        "desc": {
+          "goal": "Xây website WordPress phục vụ quảng cáo dịch vụ hỗ trợ iCloud và tra cứu ID sản phẩm từ dữ liệu có sẵn.",
+          "role": "Lập trình viên freelance phụ trách triển khai end-to-end.",
+          "job": {
+            "summary": "Thiết kế và triển khai nền tảng WordPress + automation cho vận hành dịch vụ.",
+            "sub_jobs": [
+              "Xây website tra cứu ID sản phẩm cùng giao diện thân thiện với người dùng.",
+              "Phát triển plugin/tính năng bằng PHP theo yêu cầu khách hàng.",
+              "Tư vấn cấu hình hosting phù hợp để tối ưu chi phí và độ ổn định.",
+              "Xây chatbot Telegram bằng Cloudflare Worker để hỗ trợ người dùng dịch vụ."
+            ]
+          },
+          "result": [
+            "Website đáp ứng nhu cầu của khách hàng.",
+            "Telegram chatbot đạt 1.500 lượt tương tác trong 2 tuần."
+          ],
+          "tech": "WordPress, PHP, Telegram Bot API, JavaScript, Cloudflare Worker"
+        }
       },
       {
-        "label": "GitHub",
-        "href": "https://github.com/tutranz0101"
+        "name": "Prototype dashboard doanh nghiệp có hỗ trợ AI",
+        "meta": "Honest Agency (Canada), 09/2024 - 12/2024",
+        "desc": {
+          "goal": "Xây dựng prototype dashboard tích hợp AI cho phân tích hiệu suất, CRM và báo cáo insight.",
+          "role": "Lập trình viên ứng dụng, đồng thời hỗ trợ điều phối phạm vi theo hướng Project Manager.",
+          "job": {
+            "summary": "Nghiên cứu giải pháp low-code và dựng bản demo theo mục tiêu kinh doanh.",
+            "sub_jobs": [
+              "So sánh các nền tảng low-code theo tiêu chí tốc độ triển khai và khả năng mở rộng.",
+              "Thiết kế luồng dữ liệu kết nối giữa Airtable, Noloco và Zoho Analytics.",
+              "Xây các tính năng cốt lõi để demo trực tiếp.",
+              "Làm rõ requirement theo sprint để giảm rủi ro thay đổi phạm vi."
+            ]
+          },
+          "result": [
+            "Prototype đáp ứng nhu cầu khách hàng và hỗ trợ quyết định hướng phát triển.",
+            "Bàn giao đầy đủ tài liệu kỹ thuật cho giai đoạn phát triển sau."
+          ],
+          "tech": "Noloco, Airtable, Zoho Analytics"
+        }
+      },
+      {
+        "name": "Hệ thống bán soát vé & vận hành bến phà",
+        "meta": "Công ty CP Phà An Giang, 10/2025 - nay",
+        "desc": {
+          "goal": "Xây hệ thống bán vé và vận hành cho 7 bến với khoảng 60 người dùng và tải giao dịch lớn mỗi ngày.",
+          "role": "Sole developer phụ trách toàn bộ vòng đời sản phẩm từ thiết kế đến vận hành.",
+          "job": {
+            "summary": "Triển khai nền tảng bán/soát vé và hạ tầng server tự chủ, tối ưu cho vận hành.",
+            "sub_jobs": [
+              "Xây web bán vé tích hợp với phần mềm Chip Nanopi Neo soát vé tự phát triển.",
+              "Phát triển server chính + server phụ cho hệ thống.",
+              "Xây web quản lý dữ liệu và thống kê báo cáo nội bộ.",
+              "Tối ưu hiệu năng, chi phí vận hành và giảm mức phụ thuộc Internet."
+            ]
+          },
+          "result": [
+            "Giảm thời gian soát vé từ khoảng 3 giây xuống 0.5-1 giây.",
+            "Giảm đáng kể chi phí phụ thuộc bên thứ ba cho bán soát vé và duy trì server.",
+            "Hệ thống dễ dùng và cài đặt cho cả người dùng non-tech."
+          ],
+          "tech": "Go, SQLite, REST API, JWT Auth, Vanilla JS, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)"
+        }
       }
     ]
-  },
-  "footer": {
-    "note": "Xây bằng vanilla HTML/CSS/JS. Nội dung EN/VI tải từ JSON với cơ chế fallback an toàn."
   }
 }

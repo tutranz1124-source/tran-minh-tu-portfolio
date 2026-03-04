@@ -69,8 +69,9 @@ function computeFluidPreset() {
   const memory = Number(navigator.deviceMemory || 8);
   const saveData = Boolean(navigator.connection?.saveData);
   const isMobile = window.matchMedia("(max-width: 820px)").matches;
+  const isTabletUp = window.matchMedia("(min-width: 768px)").matches;
   const hasFinePointer = window.matchMedia("(any-pointer: fine)").matches;
-  const useDragTrigger = !hasFinePointer;
+  const useDragTrigger = !hasFinePointer && !isTabletUp;
   const trigger = useDragTrigger ? "click" : "hover";
 
   const lowTier = saveData || memory <= 4 || cores <= 4 || isMobile;

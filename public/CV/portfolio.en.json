@@ -1,104 +1,40 @@
 {
   "meta": {
     "name_en": "Tu Minh Tran",
-    "name_vi": "Tr?n Minh Tú",
+    "name_vi": "Trần Minh Tú",
     "title": "Software Engineer / Full-stack Developer",
-    "location": "Ho Chi Minh City, Vietnam",
     "email": "tutranz0101@gmail.com",
-    "phone": "+84 0941 556 649",
     "links": {
-      "github": "https://github.com/tutranz0101",
       "linkedin": "https://www.linkedin.com/in/tu-tran-115350294/",
-      "portfolio": "",
       "cv": "./public/CV/cv.pdf"
     }
   },
   "hero": {
     "badge": "",
-    "tagline": "I design and ship end-to-end software that stays reliable under high daily transaction load.",
+    "tagline": "I’m a full-stack software engineer who builds end-to-end solutions—from backend services to desktop apps and operations tooling.",
     "about_paragraphs": [
-      "I work across backend services, Windows desktop applications, and on-site operations tooling, with strong ownership from planning to deployment.",
-      "My focus is practical engineering trade-offs: reliability first, clear workflows for operators, and fast incident recovery when infrastructure fails."
-    ],
-    "current_line": "Currently leading the AGF ferry ticketing and operations platform as the sole developer."
-  },
-  "impact": {
-    "title": "Impact",
-    "subtitle": "Measured outcomes from production deployment",
-    "metrics": [
-      {
-        "value_num": 20000,
-        "value_suffix": "/day",
-        "display": "20k/day",
-        "animate": true,
-        "label": "Average tickets processed",
-        "note": "Peak throughput reaches ~40k/day during high-demand periods"
-      },
-      {
-        "value_num": 7,
-        "value_suffix": " stations",
-        "display": "7 stations",
-        "animate": true,
-        "label": "Live deployment scope",
-        "note": "System rollout across all AGF ferry stations"
-      },
-      {
-        "value_num": 60,
-        "value_suffix": "+ users",
-        "display": "60+ users",
-        "animate": true,
-        "label": "Operational users",
-        "note": "Ticketing, admin, and operations staff using the platform daily"
-      },
-      {
-        "value_num": 0.8,
-        "value_suffix": "s",
-        "display": "0.5-1.0s",
-        "animate": true,
-        "label": "Validation speed",
-        "note": "Reduced from ~3.0s by redesigning flows and data handling"
-      }
-    ]
-  },
-  "more_work": {
-    "title": "More Work",
-    "subtitle": "Recent builds and delivery outcomes",
-    "items": [
-      {
-        "name": "AI-assisted Business Dashboard",
-        "meta": "Honest Agency, 2024",
-        "desc": "Delivered analytics and CRM reporting prototypes, balancing speed, cost, and maintainability for stakeholder goals."
-      },
-      {
-        "name": "WordPress Service Platform",
-        "meta": "Freelance, 2024",
-        "desc": "Built and launched a WordPress website with custom PHP extensions and workflow-specific integrations."
-      },
-      {
-        "name": "Telegram Automation Campaign",
-        "meta": "Freelance, 2024",
-        "desc": "Implemented a bot campaign that reached around 1,500 participants in roughly two weeks."
-      }
+      "I’m currently the sole developer at An Giang Ferry JSC, building a ticketing/validation system, internal management tools, and a self-managed server setup for day-to-day operations.",
+      "My strength is adapting quickly to different environments and project needs. I’ve self-learned and shipped across web, low-code platforms, applications, embedded/chip systems, and servers to meet real customer requirements."
     ]
   },
   "experience": {
     "title": "Experience",
-    "subtitle": "Product ownership, engineering, and delivery",
+    "subtitle": "Project goals + role + results",
     "items": [
       {
-        "date": "Oct 2025 - Present",
-        "role": "Software Engineer (Sole Developer) - An Giang Ferry JSC",
-        "desc": "Building and operating ticketing + operations systems for multi-station ferry services under high daily traffic."
+        "date": "Apr 2024 - Jun 2024, Ho Chi Minh City",
+        "role": "Developer (Freelance)\nCheck Unlock VN",
+        "desc": "Goal: build a WordPress website for service promotion and a Telegram chatbot to support customers.\nTech: WordPress, Python, JavaScript, Cloudflare Worker, PHP"
       },
       {
-        "date": "Sep 2024 - Dec 2024",
-        "role": "Application Developer Intern - Honest Agency (Canada)",
-        "desc": "Contributed to AI-assisted dashboards and took PM-style ownership in requirements, scope, and weekly delivery planning."
+        "date": "Sep 2024 - Dec 2024, Canada",
+        "role": "Application Developer\nHonest Agency",
+        "desc": "Goal: build a prototype for an AI-enabled dashboard.\nTech: Noloco, Airtable, Zoho Analytics"
       },
       {
-        "date": "Apr 2024 - Jun 2024",
-        "role": "WordPress Developer (Freelance) - Check Unlock VN",
-        "desc": "Delivered a production WordPress stack with custom automation and Telegram bot integration."
+        "date": "Oct 2025 - Present, An Giang",
+        "role": "Software Engineer\nAn Giang Ferry JSC (AGF)",
+        "desc": "Goal: build a large-scale ticket sales/validation system.\nTech: Go, SQLite, REST APIs, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)"
       }
     ]
   },
@@ -107,15 +43,15 @@
     "items": [
       {
         "key": "Languages",
-        "value": "Go, JavaScript, SQL, PHP"
+        "value": "Go, TypeScript, JavaScript, SQL, PHP, Python"
       },
       {
         "key": "Frontend",
-        "value": "React, HTML, CSS"
+        "value": "React, HTML/CSS, SCSS, Vanilla JS"
       },
       {
         "key": "Backend",
-        "value": "REST APIs, offline sync, service design"
+        "value": "REST APIs, JWT Auth, net/http"
       },
       {
         "key": "Databases",
@@ -123,7 +59,7 @@
       },
       {
         "key": "Systems",
-        "value": "Windows scripting, embedded Linux"
+        "value": "Windows (PowerShell/.bat), Ubuntu, embedded Linux (NanoPi)"
       },
       {
         "key": "Operations",
@@ -131,22 +67,78 @@
       }
     ]
   },
-  "contact": {
-    "title": "Contact",
-    "subtitle": "Open to engineering opportunities",
-    "cta": "If you need a practical engineer who can own end-to-end delivery, let's connect.",
-    "links": [
+  "footer": {
+    "note": "Built with vanilla HTML/CSS/JS"
+  },
+  "details_work": {
+    "items": [
       {
-        "label": "Email",
-        "href": "mailto:tutranz0101@gmail.com"
+        "name": "WordPress Website + Telegram Automation",
+        "meta": "Check Unlock VN, Apr 2024 - Jun 2024",
+        "desc": {
+          "goal": "Build a WordPress website to promote iCloud support services and provide product-ID lookup from an existing dataset.",
+          "role": "Freelance developer responsible for end-to-end delivery.",
+          "job": {
+            "summary": "Designed and implemented a WordPress platform plus automation to support service operations.",
+            "sub_jobs": [
+              "Built a product-ID lookup website with a user-friendly interface.",
+              "Developed custom plugins/features in PHP based on client requirements.",
+              "Advised on hosting configuration to optimize cost and stability.",
+              "Built a Telegram chatbot using Cloudflare Worker to support customers."
+            ]
+          },
+          "result": [
+            "Website delivered and met customer needs.",
+            "Telegram chatbot reached 1,500 interactions in 2 weeks."
+          ],
+          "tech": "WordPress, PHP, Telegram Bot API, JavaScript, Cloudflare Worker"
+        }
       },
       {
-        "label": "GitHub",
-        "href": "https://github.com/tutranz0101"
+        "name": "AI-enabled Business Dashboard Prototype",
+        "meta": "Honest Agency (Canada), Sep 2024 - Dec 2024",
+        "desc": {
+          "goal": "Build a dashboard prototype with AI support for performance analysis, CRM, and insight reporting.",
+          "role": "Application developer, also supporting scope coordination in a PM-style role.",
+          "job": {
+            "summary": "Researched low-code solutions and built a demo aligned with business goals.",
+            "sub_jobs": [
+              "Compared low-code platforms by delivery speed and scalability.",
+              "Designed data flows connecting Airtable, Noloco, and Zoho Analytics.",
+              "Built core demo features for live stakeholder walkthroughs.",
+              "Clarified requirements per sprint to reduce scope-change risk."
+            ]
+          },
+          "result": [
+            "Prototype met customer needs and supported product direction decisions.",
+            "Delivered complete technical documentation for the next development phase."
+          ],
+          "tech": "Noloco, Airtable, Zoho Analytics"
+        }
+      },
+      {
+        "name": "Ticketing & Ferry Operations Platform",
+        "meta": "An Giang Ferry JSC, Oct 2025 - Present",
+        "desc": {
+          "goal": "Build a ticketing and operations system for 7 ferry stations (~60 users) with high daily transaction volume.",
+          "role": "Sole developer owning the full product lifecycle from design to operations.",
+          "job": {
+            "summary": "Delivered a ticketing/validation platform and self-managed server infrastructure optimized for operations.",
+            "sub_jobs": [
+              "Built ticketing web flows integrated with custom NanoPi Neo chip software for ticket validation.",
+              "Implemented a primary server and a backup server for the system.",
+              "Built internal management and reporting dashboards.",
+              "Optimized performance, operating cost, and reduced internet dependency."
+            ]
+          },
+          "result": [
+            "Reduced ticket validation time from ~3 seconds to 0.5–1 second.",
+            "Significantly reduced third-party dependency costs for ticketing and server maintenance.",
+            "Improved usability and installation experience for non-technical operators."
+          ],
+          "tech": "Go, SQLite, REST APIs, JWT Auth, Vanilla JS, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)"
+        }
       }
     ]
-  },
-  "footer": {
-    "note": "Built with vanilla HTML/CSS/JS. EN/VI content delivered from JSON with graceful fallback."
   }
 }

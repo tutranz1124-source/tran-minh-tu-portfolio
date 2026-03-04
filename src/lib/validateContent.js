@@ -16,12 +16,6 @@ export function validateContent(content) {
     errors.push("hero.about_paragraphs should be array");
   }
 
-  if (!content.impact || typeof content.impact !== "object") {
-    errors.push("impact missing or invalid");
-  } else if (content.impact.metrics && !Array.isArray(content.impact.metrics)) {
-    errors.push("impact.metrics should be array");
-  }
-
   return {
     ok: errors.length === 0,
     errors,

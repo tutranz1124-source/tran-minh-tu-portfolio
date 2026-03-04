@@ -1497,13 +1497,22 @@ export default function (el, config) {
     return pointer
   }
 
+  function armPointerTapImpulse(pointer) {
+    const base = Number(config.POINTER_DELTA_LIMIT) || 0.015
+    const impulse = Math.max(0.0018, Math.min(base * 0.75, 0.009))
+    const angle = Math.random() * Math.PI * 2
+    pointer.deltaX = clampPointerDelta(Math.cos(angle) * impulse)
+    pointer.deltaY = clampPointerDelta(Math.sin(angle) * impulse)
+    pointer.moved = true
+  }
+
   if ('PointerEvent' in window) {
     window.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) {
         return
       }
       const { posX, posY } = getCanvasPositionFromClient(e.clientX, e.clientY)
-      updatePointerDownData(ensurePrimaryPointer(), -1, posX, posY)
+      updatePointerDownData(ensurePrimaryPointer(), -1, posX, posY, e.pointerType)
     }, { passive: true })
 
     window.addEventListener('pointermove', (e) => {
@@ -1522,7 +1531,7 @@ export default function (el, config) {
   else {
     window.addEventListener('mousedown', (e) => {
       const { posX, posY } = getCanvasPositionFromClient(e.clientX, e.clientY)
-      updatePointerDownData(ensurePrimaryPointer(), -1, posX, posY)
+      updatePointerDownData(ensurePrimaryPointer(), -1, posX, posY, 'mouse')
     }, { passive: true })
 
     window.addEventListener('mousemove', (e) => {
@@ -1542,7 +1551,7 @@ export default function (el, config) {
 
       for (let i = 0; i < touches.length; i++) {
         const { posX, posY } = getCanvasPositionFromClient(touches[i].clientX, touches[i].clientY)
-        updatePointerDownData(pointers[i + 1], touches[i].identifier, posX, posY)
+        updatePointerDownData(pointers[i + 1], touches[i].identifier, posX, posY, 'touch')
       }
     }, { passive: true })
 
@@ -1573,7 +1582,7 @@ export default function (el, config) {
     }
   })
 
-  function updatePointerDownData(pointer, id, posX, posY) {
+  function updatePointerDownData(pointer, id, posX, posY, pointerType = 'mouse') {
     pointer.id = id
     pointer.down = true
     pointer.moved = false
@@ -1584,6 +1593,11 @@ export default function (el, config) {
     pointer.deltaX = 0
     pointer.deltaY = 0
     pointer.color = generateColor()
+
+    const shouldImpulseOnDown = config.TRIGGER === 'click' || pointerType !== 'mouse'
+    if (shouldImpulseOnDown) {
+      armPointerTapImpulse(pointer)
+    }
   }
 
   function updatePointerMoveData(pointer, posX, posY) {

@@ -289,11 +289,23 @@ function shouldLockPlayScroll() {
   return window.matchMedia("(max-width: 1023px), (pointer: coarse)").matches;
 }
 
+function forceViewportTop() {
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
 function applyPlayModeScrollLock(isPlayMode) {
   const shouldLock = Boolean(isPlayMode) && shouldLockPlayScroll();
   document.documentElement.classList.toggle("is-play-scroll-locked", shouldLock);
 
   if (shouldLock) {
+    forceViewportTop();
+    requestAnimationFrame(() => {
+      if (getState().playMode && shouldLockPlayScroll()) {
+        forceViewportTop();
+      }
+    });
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     document.body.style.overscrollBehavior = "none";
@@ -552,10 +564,124 @@ function closeWorkPopup() {
   });
 }
 
+function normalizeDetailText(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeDetailList(value) {
+  if (Array.isArray(value)) {
+    return value.map((line) => normalizeDetailText(line)).filter(Boolean);
+  }
+  const single = normalizeDetailText(value);
+  return single ? [single] : [];
+}
+
+function buildWorkDetailRows(work, lang) {
+  const rawDesc = work?.desc;
+  if (Array.isArray(rawDesc)) {
+    return rawDesc
+      .map((line) => normalizeDetailText(line))
+      .filter(Boolean)
+      .map((text) => ({ text, isSub: false }));
+  }
+
+  if (typeof rawDesc === "string") {
+    return rawDesc
+      .split(/\r?\n/g)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((text) => ({ text, isSub: false }));
+  }
+
+  if (!rawDesc || typeof rawDesc !== "object") {
+    return [];
+  }
+
+  const labels =
+    lang === "vi"
+      ? {
+          goal: "Mục tiêu",
+          role: "Vai trò",
+          job: "Công việc",
+          result: "Kết quả",
+          tech: "Tech",
+        }
+      : {
+          goal: "Goal",
+          role: "Role",
+          job: "Job",
+          result: "Result",
+          tech: "Tech",
+        };
+
+  const rows = [];
+
+  const goal = normalizeDetailText(rawDesc.goal);
+  if (goal) {
+    rows.push({ text: `${labels.goal}: ${goal}`, isSub: false });
+  }
+
+  const roleLines = normalizeDetailList(rawDesc.role);
+  if (roleLines.length === 1) {
+    rows.push({ text: `${labels.role}: ${roleLines[0]}`, isSub: false });
+  } else if (roleLines.length > 1) {
+    rows.push({ text: `${labels.role}: ${roleLines[0]}`, isSub: false });
+    roleLines.slice(1).forEach((line) => {
+      rows.push({ text: line, isSub: true });
+    });
+  }
+
+  let jobSummary = "";
+  let subJobs = [];
+  if (typeof rawDesc.job === "string" || Array.isArray(rawDesc.job)) {
+    const jobLines = normalizeDetailList(rawDesc.job);
+    if (jobLines.length) {
+      [jobSummary] = jobLines;
+      subJobs = subJobs.concat(jobLines.slice(1));
+    }
+  } else if (rawDesc.job && typeof rawDesc.job === "object") {
+    jobSummary = normalizeDetailText(rawDesc.job.summary || rawDesc.job.title || rawDesc.job.main);
+    subJobs = subJobs.concat(normalizeDetailList(rawDesc.job.sub_jobs || rawDesc.job.subJobs));
+  }
+  subJobs = subJobs.concat(normalizeDetailList(rawDesc.sub_jobs));
+
+  if (jobSummary) {
+    rows.push({ text: `${labels.job}: ${jobSummary}`, isSub: false });
+  } else if (subJobs.length) {
+    rows.push({ text: `${labels.job}:`, isSub: false });
+  }
+  subJobs.forEach((line) => {
+    rows.push({ text: line, isSub: true });
+  });
+
+  const resultLines = normalizeDetailList(rawDesc.result ?? rawDesc.ressult);
+  if (resultLines.length === 1) {
+    rows.push({ text: `${labels.result}: ${resultLines[0]}`, isSub: false });
+  } else if (resultLines.length > 1) {
+    rows.push({ text: `${labels.result}: ${resultLines[0]}`, isSub: false });
+    resultLines.slice(1).forEach((line) => {
+      rows.push({ text: line, isSub: true });
+    });
+  }
+
+  const techLines = normalizeDetailList(rawDesc.tech);
+  if (techLines.length === 1) {
+    rows.push({ text: `${labels.tech}: ${techLines[0]}`, isSub: false });
+  } else if (techLines.length > 1) {
+    rows.push({ text: `${labels.tech}: ${techLines[0]}`, isSub: false });
+    techLines.slice(1).forEach((line) => {
+      rows.push({ text: line, isSub: true });
+    });
+  }
+
+  return rows;
+}
+
 function openWorkPopup(index, triggerEl) {
   const popup = document.getElementById("work-popup");
   const state = getState();
-  const work = state.content?.more_work?.items?.[index];
+  const detailItems = state.content?.details_work?.items ?? state.content?.more_work?.items ?? [];
+  const work = detailItems[index];
   if (!popup || !work) {
     return;
   }
@@ -570,7 +696,23 @@ function openWorkPopup(index, triggerEl) {
 
   if (title) title.textContent = work.name || "";
   if (meta) meta.textContent = work.meta || "";
-  if (desc) desc.textContent = work.desc || "";
+  if (desc) {
+    const detailRows = buildWorkDetailRows(work, state.lang);
+
+    if (desc instanceof HTMLUListElement) {
+      desc.replaceChildren();
+      if (detailRows.length) {
+        detailRows.forEach((row) => {
+          const bullet = document.createElement("li");
+          bullet.className = `item__desc${row.isSub ? " item__desc--sub" : ""}`;
+          bullet.textContent = row.text;
+          desc.appendChild(bullet);
+        });
+      }
+    } else {
+      desc.textContent = detailRows.map((row) => row.text).join("\n");
+    }
+  }
 
   cancelPopupAnimations();
   ++popupMotionToken;
@@ -899,7 +1041,11 @@ function bindGlobalInteractions() {
       closeWorkPopup();
       closeDrawer();
       setContactFabOpen(false);
-      setState({ playMode: !getState().playMode });
+      const nextPlayMode = !getState().playMode;
+      if (nextPlayMode && shouldLockPlayScroll()) {
+        forceViewportTop();
+      }
+      setState({ playMode: nextPlayMode });
       return;
     }
 

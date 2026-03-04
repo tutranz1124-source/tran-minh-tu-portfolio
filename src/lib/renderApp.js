@@ -88,6 +88,50 @@ function createRollingTitle(text, id, tag = "h2", extraClass = "") {
   return title;
 }
 
+function normalizeDescLines(rawDesc) {
+  if (Array.isArray(rawDesc)) {
+    return rawDesc
+      .map((line) => (typeof line === "string" ? line.trim() : ""))
+      .filter(Boolean);
+  }
+
+  if (typeof rawDesc === "string") {
+    return rawDesc
+      .split(/\r?\n/g)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function normalizeRoleText(rawRole) {
+  if (Array.isArray(rawRole)) {
+    return rawRole
+      .map((line) => (typeof line === "string" ? line.trim() : ""))
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  if (typeof rawRole === "string") {
+    return rawRole.trim();
+  }
+
+  return "";
+}
+
+function createDescList(lines, listClass, itemClass) {
+  const list = el("ul", listClass);
+  lines.forEach((line) => {
+    list.appendChild(el("li", itemClass, {}, [line]));
+  });
+  return list;
+}
+
+function getDetailsWorkItems(content) {
+  return content.details_work?.items ?? content.more_work?.items ?? [];
+}
+
 function createSkeleton() {
   const fragment = document.createDocumentFragment();
   fragment.appendChild(
@@ -228,7 +272,7 @@ function createHeroCard(state, content) {
 
 function createExperienceSection(content, lang) {
   const experience = content.experience ?? {};
-  const works = content.more_work?.items ?? [];
+  const works = getDetailsWorkItems(content);
 
   const section = el("section", "section reveal reveal--section", { id: "experience" });
   const card = el("article", "card list-card experience reveal", { "aria-labelledby": "experience-title" });
@@ -238,6 +282,8 @@ function createExperienceSection(content, lang) {
   const list = el("ul", "experience-grid");
   (experience.items ?? []).slice(0, 4).forEach((item, index) => {
     const hasWork = Boolean(works[index]);
+    const descLines = normalizeDescLines(item.desc);
+    const roleText = normalizeRoleText(item.role) || "";
     const node = el("li", `item experience-tile${hasWork ? " is-clickable" : ""}`, hasWork ? {
       dataset: { workOpen: String(index), motionStyle: "zoom" },
       tabindex: "0",
@@ -248,9 +294,11 @@ function createExperienceSection(content, lang) {
           ? `Mở chi tiết work liên quan: ${item.role ?? "Kinh nghiệm"}`
           : `Open related work details: ${item.role ?? "Experience"}`,
     } : {}, [
-      el("h3", "u-line-clamp-2", {}, [item.role ?? ""]),
+      el("h3", "experience-tile__role", {}, [roleText]),
       el("p", "item__meta", {}, [item.date ?? ""]),
-      el("p", "item__desc u-line-clamp-3", {}, [item.desc ?? ""]),
+      descLines.length
+        ? createDescList(descLines, "item__desc-list", "item__desc")
+        : el("p", "item__desc", {}, [item.desc ?? ""]),
     ]);
     list.appendChild(node);
   });
@@ -261,7 +309,7 @@ function createExperienceSection(content, lang) {
 
 function createExperienceCarouselSection(content, lang) {
   const experienceItems = content.experience?.items ?? [];
-  const works = content.more_work?.items ?? [];
+  const works = getDetailsWorkItems(content);
   if (!experienceItems.length) {
     return null;
   }
@@ -299,6 +347,8 @@ function createExperienceCarouselSection(content, lang) {
   carouselItems.forEach((item, index) => {
     const colors = palette[index % palette.length];
     const hasWork = Boolean(works[index]);
+    const descLines = normalizeDescLines(item.desc);
+    const roleText = normalizeRoleText(item.role) || "Experience";
     const slide = el(
       "div",
       "swiper-slide exp-carousel__slide",
@@ -325,9 +375,11 @@ function createExperienceCarouselSection(content, lang) {
               }
             : {},
           [
-            el("h3", "exp-carousel__title u-line-clamp-2", {}, [item.role ?? "Experience"]),
-            el("p", "exp-carousel__meta u-line-clamp-1", {}, [item.date ?? ""]),
-            el("p", "exp-carousel__desc u-line-clamp-3", {}, [item.desc ?? ""]),
+            el("h3", "exp-carousel__title", {}, [roleText]),
+            el("p", "exp-carousel__meta", {}, [item.date ?? ""]),
+            descLines.length
+              ? createDescList(descLines, "exp-carousel__desc-list", "exp-carousel__desc")
+              : el("p", "exp-carousel__desc", {}, [item.desc ?? ""]),
           ],
         ),
       ],
@@ -448,14 +500,20 @@ function createSiteFooter(content) {
 }
 
 function createWorkPopup() {
+  const panel = el("div", "work-popup__panel", { role: "dialog", "aria-modal": "true", "aria-labelledby": "work-popup-title" }, [
+    el("h3", "work-popup__title", { id: "work-popup-title" }, [""]),
+    el("ul", "item__desc-list work-popup__desc-list", { id: "work-popup-desc" }, []),
+    el("p", "item__meta work-popup__meta", { id: "work-popup-meta" }, [""]),
+  ]);
+
+  const frame = el("div", "work-popup__frame", {}, [
+    el("button", "work-popup__close", { type: "button", dataset: { workClose: "true" }, "aria-label": "Close" }, ["\u00d7"]),
+    panel,
+  ]);
+
   return el("div", "work-popup u-hidden", { id: "work-popup", "aria-hidden": "true" }, [
     el("div", "work-popup__backdrop", { dataset: { workClose: "true" } }),
-    el("div", "work-popup__panel", { role: "dialog", "aria-modal": "true", "aria-labelledby": "work-popup-title" }, [
-      el("button", "work-popup__close", { type: "button", dataset: { workClose: "true" }, "aria-label": "Close" }, ["\u00d7"]),
-      el("h3", "", { id: "work-popup-title" }, [""]),
-      el("p", "item__meta", { id: "work-popup-meta" }, [""]),
-      el("p", "item__desc", { id: "work-popup-desc" }, [""]),
-    ]),
+    frame,
   ]);
 }
 
