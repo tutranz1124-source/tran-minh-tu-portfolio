@@ -259,9 +259,6 @@ function applyDrawerState(isOpen) {
 
   if (isOpen && panel) {
     focusTrapCleanup = trapFocus(panel);
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "";
   }
 }
 
@@ -295,9 +292,27 @@ function forceViewportTop() {
   document.body.scrollTop = 0;
 }
 
+function isWorkPopupOpen() {
+  const popup = document.getElementById("work-popup");
+  return Boolean(popup && !popup.classList.contains("u-hidden"));
+}
+
+function syncGlobalScrollLock() {
+  const state = getState();
+  const playLock = Boolean(state.playMode) && shouldLockPlayScroll();
+  const drawerLock = Boolean(state.drawerOpen);
+  const popupLock = isWorkPopupOpen();
+  const shouldLock = playLock || drawerLock || popupLock;
+
+  document.documentElement.classList.toggle("is-play-scroll-locked", playLock);
+  document.documentElement.style.overflow = shouldLock ? "hidden" : "";
+  document.body.style.overflow = shouldLock ? "hidden" : "";
+  document.body.style.overscrollBehavior = playLock ? "none" : "";
+  document.body.style.touchAction = playLock ? "none" : "";
+}
+
 function applyPlayModeScrollLock(isPlayMode) {
   const shouldLock = Boolean(isPlayMode) && shouldLockPlayScroll();
-  document.documentElement.classList.toggle("is-play-scroll-locked", shouldLock);
 
   if (shouldLock) {
     forceViewportTop();
@@ -306,17 +321,8 @@ function applyPlayModeScrollLock(isPlayMode) {
         forceViewportTop();
       }
     });
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    document.body.style.overscrollBehavior = "none";
-    document.body.style.touchAction = "none";
-    return;
   }
-
-  document.documentElement.style.overflow = "";
-  document.body.style.overflow = "";
-  document.body.style.overscrollBehavior = "";
-  document.body.style.touchAction = "";
+  syncGlobalScrollLock();
 }
 
 function scrollToSection(sectionId) {
@@ -403,7 +409,7 @@ function cancelPopupAnimations() {
 function finishWorkPopupClose(popup) {
   popup.classList.add("u-hidden");
   popup.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
+  syncGlobalScrollLock();
 
   const focusTarget = popupLastFocused;
   popupLastFocused = null;
@@ -726,7 +732,7 @@ function openWorkPopup(index, triggerEl) {
 
   popup.classList.remove("u-hidden");
   popup.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
+  syncGlobalScrollLock();
 
   const canAnimate =
     panel instanceof HTMLElement &&
@@ -1117,6 +1123,7 @@ function bindGlobalInteractions() {
   window.addEventListener("resize", () => {
     requestAnimationFrame(() => {
       navIndicatorController?.refresh(true);
+      syncGlobalScrollLock();
     });
   }, { passive: true });
 }
@@ -1145,11 +1152,7 @@ function runPostRender(state) {
   setFluidPlayMode(state.playMode);
   initNavIndicator();
   syncNavActive(state.activeSection);
-  const popup = document.getElementById("work-popup");
-  const popupClosed = !popup || popup.classList.contains("u-hidden");
-  if (!state.drawerOpen && popupClosed) {
-    applyPlayModeScrollLock(state.playMode);
-  }
+  applyPlayModeScrollLock(state.playMode);
 
   const app = document.getElementById("app");
   if (!app) {
@@ -1195,6 +1198,7 @@ function onStateChange(next) {
 
   if (prev.drawerOpen !== next.drawerOpen) {
     applyDrawerState(next.drawerOpen);
+    syncGlobalScrollLock();
   }
 
   if (prev.reducedMotion !== next.reducedMotion) {

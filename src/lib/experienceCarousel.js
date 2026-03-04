@@ -87,9 +87,10 @@ function applyResponsiveCarouselVars(stageEl) {
   const stageWidth = clamp(measuredWidth, 220, 1600);
   const viewportWidth = window.innerWidth || document.documentElement.clientWidth || stageWidth;
   const viewportRatio = clamp((viewportWidth - 360) / (1440 - 360), 0, 1);
+  const mobileArrowScale = viewportWidth <= 767 ? 0.8 : 1;
   const slideWidth = Math.round(clamp(stageWidth - 20, 228, 336));
   const slideHeight = Math.round(clamp(slideWidth * 1.315, 320, 442));
-  const arrowScale = 0.85;
+  const arrowScale = 0.85 * mobileArrowScale;
 
   const arrowHeightMin = 56;
   const arrowHeightMax = 116;
@@ -224,6 +225,8 @@ export async function initExperienceCarousel(reducedMotion = false) {
 
   const slideCount = carouselEl.querySelectorAll(".swiper-slide").length;
   const canCycle = slideCount > 1;
+  const isTabletOrMobile = window.matchMedia("(max-width: 1023px)").matches;
+  const touchRatio = isTabletOrMobile ? 1.12 : 1;
   const layout = applyResponsiveCarouselVars(stageEl);
   const initialEffect = coverflowForStageWidth(layout.stageWidth);
 
@@ -242,6 +245,16 @@ export async function initExperienceCarousel(reducedMotion = false) {
       rewind: canCycle,
       watchOverflow: false,
       allowTouchMove: canCycle,
+      simulateTouch: true,
+      shortSwipes: true,
+      longSwipes: true,
+      longSwipesRatio: 0.2,
+      longSwipesMs: 220,
+      touchRatio,
+      threshold: 4,
+      touchStartPreventDefault: false,
+      touchReleaseOnEdges: true,
+      passiveListeners: true,
       speed: reducedMotion ? 0 : 900,
       watchSlidesProgress: canCycle,
       coverflowEffect: initialEffect,

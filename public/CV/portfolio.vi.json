@@ -24,17 +24,32 @@
       {
         "date": "04/2024 - 06/2024, HCM",
         "role": "Lập trình viên (Freelance)\nCheck Unlock VN",
-        "desc": "Mục tiêu: website WordPress phục vụ quảng cáo dịch vụ và chatbot Telegram phục vụ khách hàng.\nTech: WordPress, Python, JavaScript, Cloudflare Worker, PHP"
+        "desc": "Mục tiêu: website WordPress phục vụ quảng cáo dịch vụ và chatbot Telegram phục vụ khách hàng.\nTech: WordPress, Python, JavaScript, Cloudflare Worker, PHP",
+        "images": [
+          "./public/CV/images/placeholder-1.svg",
+          "./public/CV/images/placeholder-2.svg",
+          "./public/CV/images/placeholder-3.svg"
+        ]
       },
       {
         "date": "09/2024 - 12/2024, Canada",
         "role": "Lập trình viên ứng dụng\nHonest Agency",
-        "desc": "Mục tiêu: xây dựng prototype cho dashboard AI.\nTech: Noloco, Airtable, Zoho Analytics"
+        "desc": "Mục tiêu: xây dựng prototype cho dashboard AI.\nTech: Noloco, Airtable, Zoho Analytics",
+        "images": [
+          "./public/CV/images/placeholder-1.svg",
+          "./public/CV/images/placeholder-2.svg",
+          "./public/CV/images/placeholder-3.svg"
+        ]
       },
       {
         "date": "10/2025 - nay, An Giang",
         "role": "Kỹ sư phần mềm\nCông ty CP Phà An Giang (AGF)",
-        "desc": "Mục tiêu: xây dựng hệ thống bán/soát vé với quy mô hoạt động lớn.\nTech: Go, SQLite, REST API, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)"
+        "desc": "Mục tiêu: xây dựng hệ thống bán/soát vé với quy mô hoạt động lớn.\nTech: Go, SQLite, REST API, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)",
+        "images": [
+          "./public/CV/images/placeholder-1.svg",
+          "./public/CV/images/placeholder-2.svg",
+          "./public/CV/images/placeholder-3.svg"
+        ]
       }
     ]
   },

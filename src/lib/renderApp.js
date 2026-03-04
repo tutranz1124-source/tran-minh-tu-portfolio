@@ -88,6 +88,57 @@ function createRollingTitle(text, id, tag = "h2", extraClass = "") {
   return title;
 }
 
+function initialsFromName(name) {
+  if (typeof name !== "string") {
+    return "AV";
+  }
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+  return initials || "AV";
+}
+
+function applyHeroAvatarPlaceholder(core, displayName, lang) {
+  core.replaceChildren(
+    el("span", "hero__avatar-placeholder", { "aria-hidden": "true" }, [initialsFromName(displayName)]),
+    el("span", "u-sr-only", {}, [lang === "vi" ? "Cho dat anh dai dien tam thoi" : "Temporary avatar placeholder"]),
+  );
+}
+
+function createHeroAvatar(meta, displayName, lang) {
+  const avatarHref = safeHref(meta?.links?.avatar || meta?.avatar || meta?.photo || "");
+  const wrapper = el("div", "hero__avatar", { "aria-label": lang === "vi" ? "Anh dai dien" : "Avatar" });
+
+  wrapper.appendChild(el("span", "hero__avatar-wave hero__avatar-wave--outer", { "aria-hidden": "true" }));
+  wrapper.appendChild(el("span", "hero__avatar-wave hero__avatar-wave--inner", { "aria-hidden": "true" }));
+
+  const core = el("div", "hero__avatar-core");
+  if (avatarHref) {
+    const imageNode = el("img", "hero__avatar-img", {
+      src: avatarHref,
+      alt: lang === "vi" ? "Anh dai dien" : "Avatar",
+      loading: "lazy",
+      decoding: "async",
+      draggable: "false",
+    });
+    imageNode.addEventListener("error", () => {
+      applyHeroAvatarPlaceholder(core, displayName, lang);
+    }, { once: true });
+    core.appendChild(
+      imageNode,
+    );
+  } else {
+    applyHeroAvatarPlaceholder(core, displayName, lang);
+  }
+
+  wrapper.appendChild(core);
+  return wrapper;
+}
+
 function normalizeDescLines(rawDesc) {
   if (Array.isArray(rawDesc)) {
     return rawDesc
@@ -126,6 +177,97 @@ function createDescList(lines, listClass, itemClass) {
     list.appendChild(el("li", itemClass, {}, [line]));
   });
   return list;
+}
+
+function normalizeExperienceImageLinks(item) {
+  const rawLinks = [];
+
+  if (Array.isArray(item?.images)) {
+    item.images.forEach((entry) => {
+      if (typeof entry === "string" && entry.trim()) {
+        rawLinks.push(entry.trim());
+      }
+    });
+  }
+
+  if (typeof item?.image === "string" && item.image.trim()) {
+    rawLinks.push(item.image.trim());
+  }
+
+  const unique = new Set();
+  rawLinks.forEach((raw) => {
+    const href = safeHref(raw);
+    if (href) {
+      unique.add(href);
+    }
+  });
+
+  return Array.from(unique);
+}
+
+function seededFloat(seed) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function imageSeed(src, index) {
+  let hash = 0;
+  for (let i = 0; i < src.length; i += 1) {
+    hash = ((hash << 5) - hash + src.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) + (index + 1) * 97;
+}
+
+function createExperienceMedia(item, className) {
+  const media = el("div", className, { "aria-hidden": "true" });
+  const imageLinks = normalizeExperienceImageLinks(item);
+  if (!imageLinks.length) {
+    return media;
+  }
+
+  const bubbles = el("div", `${className}-bubbles`);
+  imageLinks.forEach((src, index) => {
+    const bubble = el("span", `${className}-bubble`);
+    bubble.style.setProperty("--bubble-index", String(index));
+    const seed = imageSeed(src, index);
+    const driftX = (seededFloat(seed + 11) * 22 - 11).toFixed(2);
+    const driftY = (seededFloat(seed + 29) * 18 - 9).toFixed(2);
+    const driftDuration = ((6.8 + seededFloat(seed + 43) * 4.4) * 0.614125).toFixed(2);
+    const driftDelay = (-seededFloat(seed + 61) * driftDuration).toFixed(2);
+    const driftScaleMid = (1.015 + seededFloat(seed + 73) * 0.045).toFixed(3);
+    const driftScaleEnd = (0.97 + seededFloat(seed + 89) * 0.04).toFixed(3);
+    const driftRotate = (seededFloat(seed + 101) * 12 - 6).toFixed(2);
+
+    bubble.style.setProperty("--bubble-drift-x", `${driftX}px`);
+    bubble.style.setProperty("--bubble-drift-y", `${driftY}px`);
+    bubble.style.setProperty("--bubble-drift-duration", `${driftDuration}s`);
+    bubble.style.setProperty("--bubble-drift-delay", `${driftDelay}s`);
+    bubble.style.setProperty("--bubble-scale-mid", driftScaleMid);
+    bubble.style.setProperty("--bubble-scale-end", driftScaleEnd);
+    bubble.style.setProperty("--bubble-drift-rotate", `${driftRotate}deg`);
+
+    const imageNode = el("img", `${className}-bubble-img`, {
+      src,
+      alt: "",
+      loading: "lazy",
+      decoding: "async",
+      draggable: "false",
+    });
+
+    imageNode.addEventListener("error", () => {
+      bubble.remove();
+      if (!bubbles.childElementCount) {
+        media.classList.remove("has-images");
+      }
+    }, { once: true });
+
+    bubble.appendChild(imageNode);
+    bubbles.appendChild(bubble);
+  });
+
+  media.classList.add("has-images");
+  media.appendChild(bubbles);
+  return media;
 }
 
 function getDetailsWorkItems(content) {
@@ -233,6 +375,7 @@ function createHeroCard(state, content) {
   const lang = state.lang;
   const meta = content.meta ?? {};
   const hero = content.hero ?? {};
+  const displayName = activeName(content, lang);
   const heroBadge = typeof hero.badge === "string" ? hero.badge.trim() : "";
   const emailHref = meta.email ? `mailto:${meta.email}` : "";
   const linkedinHref = safeHref(meta.links?.linkedin || "");
@@ -241,8 +384,15 @@ function createHeroCard(state, content) {
   if (heroBadge) {
     card.appendChild(el("span", "hero__badge", {}, [heroBadge]));
   }
-  card.appendChild(createRollingTitle(activeName(content, lang), "hero-title", "h1"));
-  card.appendChild(el("p", "hero__subtitle", {}, [meta.title ?? "Software Engineer / Full-stack Developer"]));
+  card.appendChild(
+    el("div", "hero__head", {}, [
+      el("div", "hero__titles", {}, [
+        createRollingTitle(displayName, "hero-title", "h1"),
+        el("p", "hero__subtitle", {}, [meta.title ?? "Software Engineer / Full-stack Developer"]),
+      ]),
+      createHeroAvatar(meta, displayName, lang),
+    ]),
+  );
 
   if (hero.tagline) {
     card.appendChild(el("p", "hero__tagline u-line-clamp-2", {}, [hero.tagline]));
@@ -284,6 +434,13 @@ function createExperienceSection(content, lang) {
     const hasWork = Boolean(works[index]);
     const descLines = normalizeDescLines(item.desc);
     const roleText = normalizeRoleText(item.role) || "";
+    const body = el("div", "experience-tile__body", {}, [
+      el("h3", "experience-tile__role", {}, [roleText]),
+      el("p", "item__meta", {}, [item.date ?? ""]),
+      descLines.length
+        ? createDescList(descLines, "item__desc-list", "item__desc")
+        : el("p", "item__desc", {}, [item.desc ?? ""]),
+    ]);
     const node = el("li", `item experience-tile${hasWork ? " is-clickable" : ""}`, hasWork ? {
       dataset: { workOpen: String(index), motionStyle: "zoom" },
       tabindex: "0",
@@ -294,11 +451,8 @@ function createExperienceSection(content, lang) {
           ? `Mở chi tiết work liên quan: ${item.role ?? "Kinh nghiệm"}`
           : `Open related work details: ${item.role ?? "Experience"}`,
     } : {}, [
-      el("h3", "experience-tile__role", {}, [roleText]),
-      el("p", "item__meta", {}, [item.date ?? ""]),
-      descLines.length
-        ? createDescList(descLines, "item__desc-list", "item__desc")
-        : el("p", "item__desc", {}, [item.desc ?? ""]),
+      createExperienceMedia(item, "experience-tile__media"),
+      body,
     ]);
     list.appendChild(node);
   });
@@ -308,29 +462,19 @@ function createExperienceSection(content, lang) {
 }
 
 function createExperienceCarouselSection(content, lang) {
-  const experienceItems = content.experience?.items ?? [];
+  const experience = content.experience ?? {};
+  const experienceItems = experience.items ?? [];
   const works = getDetailsWorkItems(content);
   if (!experienceItems.length) {
     return null;
   }
   const carouselItems = experienceItems.slice(0, 3);
-  const sectionTitle = lang === "vi" ? "Experience Carousel Test" : "Experience Carousel Test";
+  const rawSectionTitle = typeof experience.title === "string" ? experience.title.trim() : "";
+  const sectionTitle = rawSectionTitle || (lang === "vi" ? "Kinh nghiem" : "Experience");
 
   const section = el("section", "section reveal reveal--section", { id: "experience" });
   const card = el("article", "card list-card experience-carousel-panel rolling-panel reveal", { "aria-labelledby": "experience-carousel-title" });
   card.appendChild(createRollingTitle(sectionTitle, "experience-carousel-title"));
-  card.appendChild(
-    el(
-      "p",
-      "list-card__subtitle",
-      {},
-      [
-        lang === "vi"
-          ? "Thu animation coverflow tu carousel example. Keo ngang de test."
-          : "Coverflow animation test from your carousel example. Drag horizontally to test.",
-      ],
-    ),
-  );
 
   const stage = el("div", "exp-carousel-stage", { id: "experience-carousel-stage" });
   const swiper = el("div", "swiper exp-carousel", { id: "experience-carousel-swiper" });
@@ -348,7 +492,14 @@ function createExperienceCarouselSection(content, lang) {
     const colors = palette[index % palette.length];
     const hasWork = Boolean(works[index]);
     const descLines = normalizeDescLines(item.desc);
-    const roleText = normalizeRoleText(item.role) || "Experience";
+    const roleText = normalizeRoleText(item.role) || sectionTitle;
+    const body = el("div", "exp-carousel__body", {}, [
+      el("h3", "exp-carousel__title", {}, [roleText]),
+      el("p", "exp-carousel__meta", {}, [item.date ?? ""]),
+      descLines.length
+        ? createDescList(descLines, "exp-carousel__desc-list", "exp-carousel__desc")
+        : el("p", "exp-carousel__desc", {}, [item.desc ?? ""]),
+    ]);
     const slide = el(
       "div",
       "swiper-slide exp-carousel__slide",
@@ -375,11 +526,8 @@ function createExperienceCarouselSection(content, lang) {
               }
             : {},
           [
-            el("h3", "exp-carousel__title", {}, [roleText]),
-            el("p", "exp-carousel__meta", {}, [item.date ?? ""]),
-            descLines.length
-              ? createDescList(descLines, "exp-carousel__desc-list", "exp-carousel__desc")
-              : el("p", "exp-carousel__desc", {}, [item.desc ?? ""]),
+            createExperienceMedia(item, "exp-carousel__media"),
+            body,
           ],
         ),
       ],

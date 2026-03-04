@@ -24,17 +24,32 @@
       {
         "date": "Apr 2024 - Jun 2024, Ho Chi Minh City",
         "role": "Developer (Freelance)\nCheck Unlock VN",
-        "desc": "Goal: build a WordPress website for service promotion and a Telegram chatbot to support customers.\nTech: WordPress, Python, JavaScript, Cloudflare Worker, PHP"
+        "desc": "Goal: build a WordPress website for service promotion and a Telegram chatbot to support customers.\nTech: WordPress, Python, JavaScript, Cloudflare Worker, PHP",
+        "images": [
+          "./public/CV/images/placeholder-1.svg",
+          "./public/CV/images/placeholder-2.svg",
+          "./public/CV/images/placeholder-3.svg"
+        ]
       },
       {
         "date": "Sep 2024 - Dec 2024, Canada",
         "role": "Application Developer\nHonest Agency",
-        "desc": "Goal: build a prototype for an AI-enabled dashboard.\nTech: Noloco, Airtable, Zoho Analytics"
+        "desc": "Goal: build a prototype for an AI-enabled dashboard.\nTech: Noloco, Airtable, Zoho Analytics",
+        "images": [
+          "./public/CV/images/placeholder-1.svg",
+          "./public/CV/images/placeholder-2.svg",
+          "./public/CV/images/placeholder-3.svg"
+        ]
       },
       {
         "date": "Oct 2025 - Present, An Giang",
         "role": "Software Engineer\nAn Giang Ferry JSC (AGF)",
-        "desc": "Goal: build a large-scale ticket sales/validation system.\nTech: Go, SQLite, REST APIs, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)"
+        "desc": "Goal: build a large-scale ticket sales/validation system.\nTech: Go, SQLite, REST APIs, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)",
+        "images": [
+          "./public/CV/images/placeholder-1.svg",
+          "./public/CV/images/placeholder-2.svg",
+          "./public/CV/images/placeholder-3.svg"
+        ]
       }
     ]
   },

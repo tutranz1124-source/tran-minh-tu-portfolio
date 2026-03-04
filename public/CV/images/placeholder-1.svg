@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Placeholder 1">
+  <defs>
+    <radialGradient id="g1" cx="35%" cy="28%" r="78%">
+      <stop offset="0%" stop-color="#67E8F9"/>
+      <stop offset="55%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#082F49"/>
+    </radialGradient>
+  </defs>
+  <rect width="160" height="160" fill="#020617"/>
+  <circle cx="80" cy="80" r="72" fill="url(#g1)"/>
+  <text x="80" y="93" text-anchor="middle" font-family="Be Vietnam Pro, Arial, sans-serif" font-size="42" font-weight="700" fill="#F8FAFC">1</text>
+</svg>
