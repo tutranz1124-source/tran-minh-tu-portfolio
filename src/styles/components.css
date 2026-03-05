@@ -587,8 +587,8 @@
 
 .hero__avatar {
   position: relative;
-  width: clamp(88px, 9.2vw, 124px);
-  height: clamp(88px, 9.2vw, 124px);
+  width: clamp(114px, 12vw, 161px);
+  height: clamp(114px, 12vw, 161px);
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -945,19 +945,21 @@
 
 .experience-tile__media-bubbles,
 .exp-carousel__media-bubbles {
+  position: relative;
   width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .experience-tile__media-bubble,
 .exp-carousel__media-bubble {
+  position: absolute;
+  left: var(--bubble-x-start, 50%);
+  top: var(--bubble-y-start, 50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
   width: var(--media-bubble-size);
   height: var(--media-bubble-size);
   border-radius: 999px;
@@ -965,9 +967,17 @@
   border: 1px solid rgba(248, 250, 252, 0.82);
   background: rgba(7, 11, 22, 0.82);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.34);
+  transform: translate3d(-50%, -50%, 0);
   animation: experience-bubble-float var(--bubble-drift-duration, 12s) ease-in-out infinite alternate;
   animation-delay: var(--bubble-drift-delay, 0s);
-  will-change: transform;
+  will-change: left, top, transform;
+}
+
+.experience-tile__media-bubble.is-physics,
+.exp-carousel__media-bubble.is-physics {
+  animation: none !important;
+  left: 0 !important;
+  top: 0 !important;
 }
 
 .experience-tile__media-bubble-img,
@@ -1095,17 +1105,19 @@
 
 @keyframes experience-bubble-float {
   0% {
-    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+    left: var(--bubble-x-start, 50%);
+    top: var(--bubble-y-start, 50%);
+    transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(1);
   }
   50% {
-    transform: translate3d(
-      calc(var(--bubble-drift-x, 6px) * 0.55),
-      calc(var(--bubble-drift-y, -5px) * 0.55),
-      0
-    ) rotate(calc(var(--bubble-drift-rotate, 3deg) * 0.55)) scale(var(--bubble-scale-mid, 1.03));
+    left: var(--bubble-x-mid, var(--bubble-x-end, 50%));
+    top: var(--bubble-y-mid, var(--bubble-y-end, 50%));
+    transform: translate3d(-50%, -50%, 0) rotate(calc(var(--bubble-drift-rotate, 3deg) * 0.55)) scale(var(--bubble-scale-mid, 1.03));
   }
   100% {
-    transform: translate3d(var(--bubble-drift-x, 6px), var(--bubble-drift-y, -5px), 0) rotate(var(--bubble-drift-rotate, 3deg)) scale(var(--bubble-scale-end, 0.985));
+    left: var(--bubble-x-end, 50%);
+    top: var(--bubble-y-end, 50%);
+    transform: translate3d(-50%, -50%, 0) rotate(var(--bubble-drift-rotate, 3deg)) scale(var(--bubble-scale-end, 0.985));
   }
 }
 
@@ -2001,13 +2013,17 @@ li,
     max-width: min(34vw, 140px);
   }
 
+  .navbar__play-btn {
+    display: none !important;
+  }
+
   .hero__head {
     align-items: center;
   }
 
   .hero__avatar {
-    width: clamp(78px, 21vw, 96px);
-    height: clamp(78px, 21vw, 96px);
+    width: clamp(101px, 27vw, 125px);
+    height: clamp(101px, 27vw, 125px);
   }
 
   .skills-vertical-grid {

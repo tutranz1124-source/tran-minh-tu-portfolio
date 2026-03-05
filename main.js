@@ -1,6 +1,7 @@
 import { getLastGoodContent, loadContent, prefetchContent } from "./src/lib/fetchContent.js";
 import { initFluidBackground, setFluidPlayMode } from "./src/lib/fluidBackground.js";
 import { initExperienceCarousel } from "./src/lib/experienceCarousel.js";
+import { initBubblePhysics } from "./src/lib/bubblePhysics.js";
 import { initReveal } from "./src/lib/motion.js";
 import { initActiveSectionObserver } from "./src/lib/navActive.js";
 import { renderApp } from "./src/lib/renderApp.js";
@@ -46,6 +47,10 @@ const POPUP_SHARED_EASING = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const POPUP_SHARED_FADE_DURATION = 160;
 const POPUP_SHARED_GHOST_FADE_DURATION = 120;
 const POPUP_SHARED_OVERLAY_DURATION = 180;
+
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 767px)").matches;
+}
 
 function dismissBootLoader(force = false) {
   if (loaderDismissed) {
@@ -1122,6 +1127,9 @@ function bindGlobalInteractions() {
 
   window.addEventListener("resize", () => {
     requestAnimationFrame(() => {
+      if (isMobileViewport() && getState().playMode) {
+        setState({ playMode: false });
+      }
       navIndicatorController?.refresh(true);
       syncGlobalScrollLock();
     });
@@ -1161,6 +1169,7 @@ function runPostRender(state) {
 
   initReveal(app);
   initExperienceCarousel(state.reducedMotion);
+  initBubblePhysics();
 
   if (state.playMode) {
     if (observerCleanup) {

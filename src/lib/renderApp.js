@@ -6,6 +6,10 @@ const NAV_ITEMS = [
   { id: "skills", label: { en: "Skills", vi: "K\u1ef9 n\u0103ng" } },
 ];
 
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 767px)").matches;
+}
+
 function localizedLabel(labelMap, lang) {
   return labelMap?.[lang] ?? labelMap?.en ?? "";
 }
@@ -230,16 +234,24 @@ function createExperienceMedia(item, className) {
     const bubble = el("span", `${className}-bubble`);
     bubble.style.setProperty("--bubble-index", String(index));
     const seed = imageSeed(src, index);
-    const driftX = (seededFloat(seed + 11) * 22 - 11).toFixed(2);
-    const driftY = (seededFloat(seed + 29) * 18 - 9).toFixed(2);
+    const startX = (10 + seededFloat(seed + 7) * 80).toFixed(2);
+    const startY = (10 + seededFloat(seed + 19) * 80).toFixed(2);
+    const midX = (10 + seededFloat(seed + 31) * 80).toFixed(2);
+    const midY = (10 + seededFloat(seed + 47) * 80).toFixed(2);
+    const endX = (10 + seededFloat(seed + 59) * 80).toFixed(2);
+    const endY = (10 + seededFloat(seed + 71) * 80).toFixed(2);
     const driftDuration = ((6.8 + seededFloat(seed + 43) * 4.4) * 0.614125).toFixed(2);
     const driftDelay = (-seededFloat(seed + 61) * driftDuration).toFixed(2);
     const driftScaleMid = (1.015 + seededFloat(seed + 73) * 0.045).toFixed(3);
     const driftScaleEnd = (0.97 + seededFloat(seed + 89) * 0.04).toFixed(3);
     const driftRotate = (seededFloat(seed + 101) * 12 - 6).toFixed(2);
 
-    bubble.style.setProperty("--bubble-drift-x", `${driftX}px`);
-    bubble.style.setProperty("--bubble-drift-y", `${driftY}px`);
+    bubble.style.setProperty("--bubble-x-start", `${startX}%`);
+    bubble.style.setProperty("--bubble-y-start", `${startY}%`);
+    bubble.style.setProperty("--bubble-x-mid", `${midX}%`);
+    bubble.style.setProperty("--bubble-y-mid", `${midY}%`);
+    bubble.style.setProperty("--bubble-x-end", `${endX}%`);
+    bubble.style.setProperty("--bubble-y-end", `${endY}%`);
     bubble.style.setProperty("--bubble-drift-duration", `${driftDuration}s`);
     bubble.style.setProperty("--bubble-drift-delay", `${driftDelay}s`);
     bubble.style.setProperty("--bubble-scale-mid", driftScaleMid);
@@ -318,19 +330,21 @@ function createNavbarContent(state) {
       el("button", `navbar__lang-btn${lang === "vi" ? " is-active" : ""}`, { type: "button", dataset: { lang: "vi" }, "aria-pressed": lang === "vi" ? "true" : "false" }, ["VI"]),
     ]),
   );
-  right.appendChild(
-    el(
-      "button",
-      `navbar__play-btn${playMode ? " is-active" : ""}`,
-      {
-        type: "button",
-        dataset: { playMode: "toggle" },
-        "aria-pressed": playMode ? "true" : "false",
-        "aria-label": lang === "vi" ? "Bat tat Play Mode" : "Toggle Play Mode",
-      },
-      [lang === "vi" ? "Play" : "Play"],
-    ),
-  );
+  if (!isMobileViewport()) {
+    right.appendChild(
+      el(
+        "button",
+        `navbar__play-btn${playMode ? " is-active" : ""}`,
+        {
+          type: "button",
+          dataset: { playMode: "toggle" },
+          "aria-pressed": playMode ? "true" : "false",
+          "aria-label": lang === "vi" ? "Bat tat Play Mode" : "Toggle Play Mode",
+        },
+        [lang === "vi" ? "Play" : "Play"],
+      ),
+    );
+  }
   right.appendChild(
     el("button", "navbar__icon-btn", {
       type: "button",

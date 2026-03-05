@@ -32,6 +32,8 @@ const DEFAULT_FLUID_CONFIG = {
   SUNRAYS: false,
 };
 
+const MOBILE_BREAKPOINT_MAX = 767;
+
 let resizeHandler = null;
 let visibilityHandler = null;
 let pageHideHandler = null;
@@ -53,6 +55,15 @@ const PLAY_FORCE_MULTIPLIER = 1.3;
 const PLAY_LENGTH_MULTIPLIER = 1.3;
 const PLAY_DENSITY_MULTIPLIER = 0.8;
 const PLAY_COLOR_MULTIPLIER = 1.45;
+
+function isMobileViewport() {
+  return window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT_MAX}px)`).matches;
+}
+
+function setCanvasActive(canvas, isActive) {
+  canvas.style.display = isActive ? "block" : "none";
+  canvas.style.background = "#000";
+}
 
 function applyCanvasViewport(canvas, api) {
   const width = Math.max(1, Math.floor(window.innerWidth));
@@ -192,8 +203,15 @@ export function initFluidBackground() {
       idleInitToken = null;
     }
 
+    if (isMobileViewport()) {
+      setCanvasActive(canvas, false);
+      resolve(false);
+      return;
+    }
+
     const init = () => {
       try {
+        setCanvasActive(canvas, true);
         const adaptiveConfig = computeFluidPreset();
         const mergedConfig = {
           ...DEFAULT_FLUID_CONFIG,
@@ -219,6 +237,13 @@ export function initFluidBackground() {
           }
           resizeRaf = requestAnimationFrame(() => {
             resizeRaf = 0;
+            if (isMobileViewport()) {
+              setCanvasActive(canvas, false);
+              api.setConfig?.({ PAUSED: true });
+              return;
+            }
+            setCanvasActive(canvas, true);
+            api.setConfig?.({ PAUSED: document.hidden });
             applyCanvasViewport(canvas, api);
           });
         };
