@@ -1,5 +1,11 @@
 import { getLastGoodContent, loadContent, prefetchContent } from "./src/lib/fetchContent.js";
-import { initFluidBackground, setFluidPlayMode } from "./src/lib/fluidBackground.js";
+import {
+  initFluidBackground,
+  randomizeFluidPlayModeColor,
+  resetFluidPlayModeColor,
+  setFluidPlayMode,
+  setFluidTheme,
+} from "./src/lib/fluidBackground.js";
 import { initExperienceCarousel } from "./src/lib/experienceCarousel.js";
 import { initBubblePhysics } from "./src/lib/bubblePhysics.js";
 import { initReveal } from "./src/lib/motion.js";
@@ -116,6 +122,14 @@ function initBootLoaderGate() {
 
 function setScrollBehavior(reducedMotion) {
   document.documentElement.style.scrollBehavior = reducedMotion ? "auto" : "smooth";
+}
+
+function applyTheme(theme) {
+  const nextTheme = theme === "light" ? "light" : "dark";
+  const root = document.documentElement;
+  root.classList.toggle("theme-light", nextTheme === "light");
+  root.classList.toggle("theme-dark", nextTheme === "dark");
+  root.setAttribute("data-theme", nextTheme);
 }
 
 function initNavIndicator() {
@@ -581,10 +595,21 @@ function normalizeDetailText(value) {
 
 function normalizeDetailList(value) {
   if (Array.isArray(value)) {
-    return value.map((line) => normalizeDetailText(line)).filter(Boolean);
+    return value.flatMap((line) =>
+      normalizeDetailText(line)
+        .split(/\r?\n/g)
+        .map((part) => part.trim())
+        .filter(Boolean),
+    );
   }
   const single = normalizeDetailText(value);
-  return single ? [single] : [];
+  if (!single) {
+    return [];
+  }
+  return single
+    .split(/\r?\n/g)
+    .map((part) => part.trim())
+    .filter(Boolean);
 }
 
 function buildWorkDetailRows(work, lang) {
@@ -593,7 +618,7 @@ function buildWorkDetailRows(work, lang) {
     return rawDesc
       .map((line) => normalizeDetailText(line))
       .filter(Boolean)
-      .map((text) => ({ text, isSub: false }));
+      .map((text) => ({ text, isSub: false, isJobSub: false, label: "", emphasizeLabel: false }));
   }
 
   if (typeof rawDesc === "string") {
@@ -601,7 +626,7 @@ function buildWorkDetailRows(work, lang) {
       .split(/\r?\n/g)
       .map((line) => line.trim())
       .filter(Boolean)
-      .map((text) => ({ text, isSub: false }));
+      .map((text) => ({ text, isSub: false, isJobSub: false, label: "", emphasizeLabel: false }));
   }
 
   if (!rawDesc || typeof rawDesc !== "object") {
@@ -626,21 +651,58 @@ function buildWorkDetailRows(work, lang) {
         };
 
   const rows = [];
+  const pushRow = (text, {
+    isSub = false,
+    isJobSub = false,
+    isListBullet = false,
+    label = "",
+    emphasizeLabel = false,
+  } = {}) => {
+    const safeText = normalizeDetailText(text);
+    const safeLabel = normalizeDetailText(label);
+    if (!safeText && !safeLabel) {
+      return;
+    }
+    rows.push({
+      text: safeText,
+      isSub,
+      isJobSub,
+      isListBullet,
+      label: safeLabel,
+      emphasizeLabel,
+    });
+  };
 
-  const goal = normalizeDetailText(rawDesc.goal);
-  if (goal) {
-    rows.push({ text: `${labels.goal}: ${goal}`, isSub: false });
-  }
+  const pushLabeledRows = (label, lines, { emphasizeLabel = false, bulletAllWhenMulti = false } = {}) => {
+    const normalized = (lines || []).map((line) => normalizeDetailText(line)).filter(Boolean);
+    if (!normalized.length) {
+      return;
+    }
+
+    if (bulletAllWhenMulti && normalized.length > 1) {
+      pushRow("", { label, emphasizeLabel });
+      normalized.forEach((line) => {
+        pushRow(line, { isSub: true, isListBullet: true });
+      });
+      return;
+    }
+
+    pushRow(normalized[0], { label, emphasizeLabel });
+    normalized.slice(1).forEach((line) => {
+      pushRow(line, { isSub: true, isListBullet: bulletAllWhenMulti });
+    });
+  };
+
+  pushLabeledRows(labels.goal, normalizeDetailList(rawDesc.goal), {
+    emphasizeLabel: true,
+    bulletAllWhenMulti: true,
+  });
 
   const roleLines = normalizeDetailList(rawDesc.role);
-  if (roleLines.length === 1) {
-    rows.push({ text: `${labels.role}: ${roleLines[0]}`, isSub: false });
-  } else if (roleLines.length > 1) {
-    rows.push({ text: `${labels.role}: ${roleLines[0]}`, isSub: false });
-    roleLines.slice(1).forEach((line) => {
-      rows.push({ text: line, isSub: true });
-    });
-  }
+  pushLabeledRows(labels.role, roleLines, {
+    emphasizeLabel: true,
+    bulletAllWhenMulti: true,
+  });
 
   let jobSummary = "";
   let subJobs = [];
@@ -656,34 +718,28 @@ function buildWorkDetailRows(work, lang) {
   }
   subJobs = subJobs.concat(normalizeDetailList(rawDesc.sub_jobs));
 
+  const jobLines = [];
   if (jobSummary) {
-    rows.push({ text: `${labels.job}: ${jobSummary}`, isSub: false });
-  } else if (subJobs.length) {
-    rows.push({ text: `${labels.job}:`, isSub: false });
+    jobLines.push(jobSummary);
   }
-  subJobs.forEach((line) => {
-    rows.push({ text: line, isSub: true });
+  if (subJobs.length) {
+    jobLines.push(...subJobs);
+  }
+  pushLabeledRows(labels.job, jobLines, {
+    emphasizeLabel: true,
+    bulletAllWhenMulti: true,
   });
 
   const resultLines = normalizeDetailList(rawDesc.result ?? rawDesc.ressult);
-  if (resultLines.length === 1) {
-    rows.push({ text: `${labels.result}: ${resultLines[0]}`, isSub: false });
-  } else if (resultLines.length > 1) {
-    rows.push({ text: `${labels.result}: ${resultLines[0]}`, isSub: false });
-    resultLines.slice(1).forEach((line) => {
-      rows.push({ text: line, isSub: true });
-    });
-  }
+  pushLabeledRows(labels.result, resultLines, {
+    bulletAllWhenMulti: true,
+  });
 
   const techLines = normalizeDetailList(rawDesc.tech);
-  if (techLines.length === 1) {
-    rows.push({ text: `${labels.tech}: ${techLines[0]}`, isSub: false });
-  } else if (techLines.length > 1) {
-    rows.push({ text: `${labels.tech}: ${techLines[0]}`, isSub: false });
-    techLines.slice(1).forEach((line) => {
-      rows.push({ text: line, isSub: true });
-    });
-  }
+  pushLabeledRows(labels.tech, techLines, {
+    emphasizeLabel: true,
+    bulletAllWhenMulti: true,
+  });
 
   return rows;
 }
@@ -715,13 +771,33 @@ function openWorkPopup(index, triggerEl) {
       if (detailRows.length) {
         detailRows.forEach((row) => {
           const bullet = document.createElement("li");
-          bullet.className = `item__desc${row.isSub ? " item__desc--sub" : ""}`;
-          bullet.textContent = row.text;
+          const classes = ["item__desc"];
+          if (row.isSub) {
+            classes.push("item__desc--sub");
+          }
+          if (row.isJobSub) {
+            classes.push("item__desc--job-sub");
+          }
+          if (row.isListBullet) {
+            classes.push("item__desc--list-bullet");
+          }
+          bullet.className = classes.join(" ");
+          if (row.label) {
+            const labelNode = document.createElement("span");
+            labelNode.className = `work-popup__desc-label${row.emphasizeLabel ? " work-popup__desc-label--major" : ""}`;
+            labelNode.textContent = `${row.label}: `;
+            bullet.appendChild(labelNode);
+          }
+          if (row.text) {
+            bullet.appendChild(document.createTextNode(row.text));
+          }
           desc.appendChild(bullet);
         });
       }
     } else {
-      desc.textContent = detailRows.map((row) => row.text).join("\n");
+      desc.textContent = detailRows
+        .map((row) => (row.label ? `${row.label}: ${row.text}`.trim() : row.text))
+        .join("\n");
     }
   }
 
@@ -1038,11 +1114,62 @@ function bindGlobalInteractions() {
       }
     }
 
-    const langBtn = event.target.closest(".navbar__lang-btn");
-    if (langBtn) {
-      const lang = langBtn.dataset.lang;
-      if (lang && lang !== getState().lang) {
+    const langToggleBtn = event.target.closest("[data-lang-toggle='true']");
+    if (langToggleBtn) {
+      const currentLang = getState().lang;
+      const nextLang =
+        langToggleBtn.dataset.langNext === "vi" || langToggleBtn.dataset.langNext === "en"
+          ? langToggleBtn.dataset.langNext
+          : (currentLang === "vi" ? "en" : "vi");
+      if (nextLang !== currentLang) {
+        loadLanguage(nextLang);
+      }
+      return;
+    }
+
+    const legacyLangBtn = event.target.closest(".navbar__lang-btn");
+    if (legacyLangBtn) {
+      const lang = legacyLangBtn.dataset.lang;
+      if ((lang === "vi" || lang === "en") && lang !== getState().lang) {
         loadLanguage(lang);
+      }
+      return;
+    }
+
+    const themeToggleBtn = event.target.closest("[data-theme-toggle='true']");
+    if (themeToggleBtn) {
+      const currentTheme = getState().theme;
+      const nextTheme =
+        themeToggleBtn.dataset.themeNext === "dark" || themeToggleBtn.dataset.themeNext === "light"
+          ? themeToggleBtn.dataset.themeNext
+          : (currentTheme === "light" ? "dark" : "light");
+      if (nextTheme !== currentTheme) {
+        setState({ theme: nextTheme });
+      }
+      return;
+    }
+
+    const fluidRandomBtn = event.target.closest("[data-fluid-play='random']");
+    if (fluidRandomBtn) {
+      if (getState().playMode) {
+        randomizeFluidPlayModeColor();
+      }
+      return;
+    }
+
+    const fluidDefaultBtn = event.target.closest("[data-fluid-play='default']");
+    if (fluidDefaultBtn) {
+      if (getState().playMode) {
+        resetFluidPlayModeColor();
+      }
+      return;
+    }
+
+    const legacyThemeBtn = event.target.closest(".navbar__theme-btn");
+    if (legacyThemeBtn) {
+      const nextTheme = legacyThemeBtn.dataset.theme;
+      if ((nextTheme === "dark" || nextTheme === "light") && nextTheme !== getState().theme) {
+        setState({ theme: nextTheme });
       }
       return;
     }
@@ -1150,6 +1277,8 @@ function initSectionObserver() {
 
 function runPostRender(state) {
   setScrollBehavior(state.reducedMotion);
+  applyTheme(state.theme);
+  setFluidTheme(state.theme);
   applyDrawerState(state.drawerOpen);
   if (state.playMode) {
     setContactFabOpen(false);
@@ -1193,7 +1322,8 @@ function onStateChange(next) {
     || prev.status !== next.status
     || prev.lang !== next.lang
     || prev.cvAvailable !== next.cvAvailable
-    || prev.playMode !== next.playMode;
+    || prev.playMode !== next.playMode
+    || prev.theme !== next.theme;
 
   if (requiresFullRender) {
     renderApp(next);

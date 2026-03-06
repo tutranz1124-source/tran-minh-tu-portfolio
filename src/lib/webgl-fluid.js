@@ -1069,6 +1069,36 @@ export default function (el, config) {
     return target
   }
 
+  function clearFBO(target) {
+    if (!target?.fbo) {
+      return
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo)
+    gl.viewport(0, 0, target.width, target.height)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+  }
+
+  function clearDoubleFBO(target) {
+    if (!target) {
+      return
+    }
+    clearFBO(target.read)
+    clearFBO(target.write)
+  }
+
+  function resetSimulation() {
+    clearDoubleFBO(dye)
+    clearDoubleFBO(velocity)
+    clearDoubleFBO(pressure)
+    clearFBO(divergence)
+    clearFBO(curl)
+    clearFBO(bloom)
+    clearFBO(sunrays)
+    clearFBO(sunraysTemp)
+    bloomFramebuffers.forEach(clearFBO)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  }
+
   function createTextureAsync(url) {
     const texture = gl.createTexture()
     gl.bindTexture(gl.TEXTURE_2D, texture)
@@ -1657,6 +1687,15 @@ export default function (el, config) {
     const multiplier = Math.max(0.05, config.POINTER_COLOR_MULTIPLIER || 0.15)
     if (config.MONOCHROME) {
       const mono = config.MONO_COLOR || { r: 235, g: 235, b: 235 }
+      // Pure black would produce a zero-energy splat, so map it to a visible near-black.
+      if ((mono.r || 0) === 0 && (mono.g || 0) === 0 && (mono.b || 0) === 0) {
+        const visibleBlack = Math.max(0.14, Math.min(0.22, multiplier * 0.85))
+        return {
+          r: visibleBlack,
+          g: visibleBlack,
+          b: visibleBlack,
+        }
+      }
       return {
         r: (mono.r / 255) * multiplier,
         g: (mono.g / 255) * multiplier,
@@ -1828,6 +1867,9 @@ export default function (el, config) {
   return {
     config,
     setConfig,
+    reset() {
+      resetSimulation()
+    },
     resize() {
       if (resizeCanvas()) {
         initFramebuffers()

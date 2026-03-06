@@ -50,6 +50,14 @@ function updateGroupBounds(group) {
   resolveOverlaps(group.bubbles, width, height);
 }
 
+function isGroupActive(group) {
+  if (!group.carouselGroup) {
+    return true;
+  }
+  const flag = group.container.getAttribute("data-bubbles-active");
+  return flag !== "false";
+}
+
 function createBubbleState(el, index, width, height) {
   const r = Math.max(8, Math.min(el.offsetWidth, el.offsetHeight) * 0.5 || 20);
   const xRatio = percentVarToRatio(el, "--bubble-x-start", 0.2 + (index * 0.3));
@@ -205,6 +213,15 @@ function tick(nowMs) {
   }
 
   groups.forEach((group) => {
+    const groupActive = isGroupActive(group);
+    if (!groupActive) {
+      group.wasActive = false;
+      return;
+    }
+    if (!group.wasActive) {
+      group.dirty = true;
+      group.wasActive = true;
+    }
     updateGroupBounds(group);
     integrateGroup(group, dtSec);
     renderGroup(group);
@@ -280,6 +297,8 @@ export function initBubblePhysics() {
       width,
       height,
       dirty: false,
+      carouselGroup: container.classList.contains("exp-carousel__media-bubbles"),
+      wasActive: true,
     });
 
     resizeObserver?.observe(container);

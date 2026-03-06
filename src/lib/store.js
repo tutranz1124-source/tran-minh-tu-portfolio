@@ -1,4 +1,4 @@
-const STATE_KEY = "portfolio_lang";
+const LANG_KEY = "portfolio_lang";
 
 const state = {
   lang: "en",
@@ -10,6 +10,7 @@ const state = {
   drawerOpen: false,
   cvAvailable: false,
   playMode: false,
+  theme: "dark",
 };
 
 const listeners = new Set();
@@ -35,7 +36,7 @@ export function setState(patch) {
   });
 
   if (Object.prototype.hasOwnProperty.call(patch, "lang")) {
-    localStorage.setItem(STATE_KEY, state.lang);
+    localStorage.setItem(LANG_KEY, state.lang);
   }
 
   if (changed) {
@@ -53,7 +54,8 @@ function normalizeLang(value) {
 }
 
 export function initStore() {
-  const storedLang = normalizeLang(localStorage.getItem(STATE_KEY));
+  const storedLang = normalizeLang(localStorage.getItem(LANG_KEY));
   state.lang = storedLang;
+  state.theme = "dark";
   state.reducedMotion = false;
 }

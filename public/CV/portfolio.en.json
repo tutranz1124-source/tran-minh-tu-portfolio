@@ -44,7 +44,7 @@
       {
         "date": "Oct 2025 - Present, An Giang",
         "role": "Software Engineer\nAn Giang Ferry JSC (AGF)",
-        "desc": "Goal: build a large-scale ticket sales/validation system.\nTech: Go, SQLite, REST APIs, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)",
+        "desc": "Goal: build a large-scale ticket sales/validation system.\nTech: Go, SQLite, REST APIs, Windows scripting (.bat/PowerShell)",
         "images": [
           "./public/CV/images/placeholder-1.svg",
           "./public/CV/images/placeholder-2.svg",
@@ -74,7 +74,7 @@
       },
       {
         "key": "Systems",
-        "value": "Windows (PowerShell/.bat), Ubuntu, embedded Linux (NanoPi)"
+        "value": "Windows (PowerShell/.bat)"
       },
       {
         "key": "Operations",
@@ -151,7 +151,7 @@
             "Significantly reduced third-party dependency costs for ticketing and server maintenance.",
             "Improved usability and installation experience for non-technical operators."
           ],
-          "tech": "Go, SQLite, REST APIs, JWT Auth, Vanilla JS, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)"
+          "tech": "Go, SQLite, REST APIs, JWT Auth, Vanilla JS, Windows scripting (.bat/PowerShell)"
         }
       }
     ]

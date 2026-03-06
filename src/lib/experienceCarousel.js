@@ -1,6 +1,8 @@
 const SWIPER_SCRIPT_SRC = "https://unpkg.com/swiper@12/swiper-bundle.min.js";
+const SWIPER_STYLE_SRC = "https://unpkg.com/swiper@12/swiper-bundle.min.css";
 
 let swiperScriptPromise = null;
+let swiperStylePromise = null;
 let swiperInstance = null;
 let carouselResizeObserver = null;
 let carouselResizeHandler = null;
@@ -8,6 +10,8 @@ let carouselResizeRaf = 0;
 let carouselProgressRaf = 0;
 let carouselLayoutKey = "";
 let slideAbsCache = new WeakMap();
+let carouselBubbleRaf = 0;
+let carouselInitObserver = null;
 
 function loadSwiperScript() {
   if (window.Swiper) {
@@ -35,6 +39,53 @@ function loadSwiperScript() {
   });
 
   return swiperScriptPromise;
+}
+
+function loadSwiperStyle() {
+  const existingStyle =
+    document.querySelector(`link[href="${SWIPER_STYLE_SRC}"]`)
+    || document.querySelector("link[data-swiper-style='true']");
+  if (
+    existingStyle
+    && (existingStyle.getAttribute("data-loaded") === "true" || Boolean(existingStyle.sheet))
+  ) {
+    existingStyle.setAttribute("data-loaded", "true");
+    return Promise.resolve();
+  }
+
+  if (swiperStylePromise) {
+    return swiperStylePromise;
+  }
+
+  swiperStylePromise = new Promise((resolve, reject) => {
+    if (existingStyle) {
+      existingStyle.addEventListener("load", () => {
+        existingStyle.setAttribute("data-loaded", "true");
+        resolve();
+      }, { once: true });
+      existingStyle.addEventListener("error", () => reject(new Error("Failed to load Swiper styles")), { once: true });
+      return;
+    }
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = SWIPER_STYLE_SRC;
+    link.setAttribute("data-swiper-style", "true");
+    link.onload = () => {
+      link.setAttribute("data-loaded", "true");
+      resolve();
+    };
+    link.onerror = () => reject(new Error("Failed to load Swiper styles"));
+    document.head.appendChild(link);
+  });
+
+  return swiperStylePromise;
+}
+
+function isStageNearViewport(stageEl) {
+  const rect = stageEl.getBoundingClientRect();
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+  return rect.top <= (viewportHeight + 160) && rect.bottom >= -120;
 }
 
 function updateSlideVars(swiper) {
@@ -71,6 +122,42 @@ function updateStageBackground(swiper, stageEl) {
   }
 }
 
+function updateBubbleActivity(swiper, stageEl) {
+  if (!swiper || swiper.destroyed || !stageEl?.isConnected) {
+    return;
+  }
+
+  const visibleSlide =
+    swiper.slides[swiper.activeIndex]
+    || swiper.slides.find((slide) => slide.classList.contains("swiper-slide-active"))
+    || swiper.slides[0]
+    || null;
+
+  swiper.slides.forEach((slide) => {
+    const isActive = Boolean(visibleSlide) && slide === visibleSlide;
+    slide.classList.toggle("is-bubbles-active", isActive);
+    slide
+      .querySelectorAll(".exp-carousel__media-bubbles")
+      .forEach((container) => container.setAttribute("data-bubbles-active", isActive ? "true" : "false"));
+  });
+}
+
+function scheduleBubbleActivityUpdate(swiper, stageEl) {
+  if (!swiper || swiper.destroyed) {
+    return;
+  }
+  if (carouselBubbleRaf) {
+    return;
+  }
+  carouselBubbleRaf = requestAnimationFrame(() => {
+    carouselBubbleRaf = 0;
+    if (!swiper || swiper.destroyed) {
+      return;
+    }
+    updateBubbleActivity(swiper, stageEl);
+  });
+}
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
@@ -87,9 +174,20 @@ function applyResponsiveCarouselVars(stageEl) {
   const stageWidth = clamp(measuredWidth, 220, 1600);
   const viewportWidth = window.innerWidth || document.documentElement.clientWidth || stageWidth;
   const viewportRatio = clamp((viewportWidth - 360) / (1440 - 360), 0, 1);
-  const mobileArrowScale = viewportWidth <= 767 ? 0.8 : 1;
-  const slideWidth = Math.round(clamp(stageWidth - 20, 228, 336));
-  const slideHeight = Math.round(clamp(slideWidth * 1.315, 320, 442));
+  const isMobile = viewportWidth <= 767;
+  const isTablet = !isMobile && viewportWidth <= 1023;
+  const mobileArrowScale = isMobile ? 0.8 : 1;
+
+  const slideWidthTarget = stageWidth * (isMobile ? 0.8 : (isTablet ? 0.46 : 0.34));
+  const slideWidthMin = isMobile ? 206 : (isTablet ? 228 : 252);
+  const slideWidthMaxRaw = isMobile ? 312 : (isTablet ? 340 : 360);
+  const slideWidthMax = Math.max(slideWidthMin, Math.min(slideWidthMaxRaw, stageWidth - 18));
+  const slideWidth = Math.round(clamp(slideWidthTarget, slideWidthMin, slideWidthMax));
+
+  const slideHeightMin = isMobile ? 310 : (isTablet ? 334 : 350);
+  const slideHeightMax = isMobile ? 420 : (isTablet ? 446 : 468);
+  const baseSlideHeight = clamp(slideWidth * 1.16, slideHeightMin, slideHeightMax);
+  const slideHeight = Math.round(clamp(baseSlideHeight * 1.2, slideHeightMin, slideHeightMax * 1.2));
   const arrowScale = 0.85 * mobileArrowScale;
 
   const arrowHeightMin = 56;
@@ -134,6 +232,21 @@ function updateCarouselLayout(swiper, stageEl) {
   }
 
   const layout = applyResponsiveCarouselVars(stageEl);
+  const slideWidthPx = `${layout.slideWidth}px`;
+  swiper.slides.forEach((slide) => {
+    if (!(slide instanceof HTMLElement)) {
+      return;
+    }
+    if (slide.style.width !== slideWidthPx) {
+      slide.style.width = slideWidthPx;
+    }
+    if (slide.style.flexBasis !== slideWidthPx) {
+      slide.style.flexBasis = slideWidthPx;
+    }
+    if (slide.style.maxWidth !== slideWidthPx) {
+      slide.style.maxWidth = slideWidthPx;
+    }
+  });
   const nextEffect = coverflowForStageWidth(layout.stageWidth);
   const nextLayoutKey = [
     layout.slideWidth,
@@ -195,6 +308,14 @@ export function destroyExperienceCarousel() {
     cancelAnimationFrame(carouselProgressRaf);
     carouselProgressRaf = 0;
   }
+  if (carouselBubbleRaf) {
+    cancelAnimationFrame(carouselBubbleRaf);
+    carouselBubbleRaf = 0;
+  }
+  if (carouselInitObserver) {
+    carouselInitObserver.disconnect();
+    carouselInitObserver = null;
+  }
 
   if (carouselResizeObserver) {
     carouselResizeObserver.disconnect();
@@ -227,10 +348,29 @@ export async function initExperienceCarousel(reducedMotion = false) {
   const canCycle = slideCount > 1;
   const isTabletOrMobile = window.matchMedia("(max-width: 1023px)").matches;
   const touchRatio = isTabletOrMobile ? 1.12 : 1;
+
+  if (!isStageNearViewport(stageEl) && typeof IntersectionObserver === "function") {
+    carouselInitObserver = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) {
+        return;
+      }
+      carouselInitObserver?.disconnect();
+      carouselInitObserver = null;
+      initExperienceCarousel(reducedMotion);
+    }, {
+      root: null,
+      rootMargin: "180px 0px 180px 0px",
+      threshold: 0.01,
+    });
+    carouselInitObserver.observe(stageEl);
+    return;
+  }
+
   const layout = applyResponsiveCarouselVars(stageEl);
   const initialEffect = coverflowForStageWidth(layout.stageWidth);
 
   try {
+    await loadSwiperStyle();
     const SwiperRef = await loadSwiperScript();
     if (!SwiperRef || !document.body.contains(carouselEl)) {
       return;
@@ -270,12 +410,18 @@ export async function initExperienceCarousel(reducedMotion = false) {
         init(sw) {
           updateSlideVars(sw);
           updateStageBackground(sw, stageEl);
+          updateBubbleActivity(sw, stageEl);
         },
         progress(sw) {
           scheduleProgressUpdate(sw);
+          scheduleBubbleActivityUpdate(sw, stageEl);
         },
         slideChangeTransitionStart(sw) {
           updateStageBackground(sw, stageEl);
+          scheduleBubbleActivityUpdate(sw, stageEl);
+        },
+        slideChangeTransitionEnd(sw) {
+          scheduleBubbleActivityUpdate(sw, stageEl);
         },
       },
     });
@@ -287,6 +433,7 @@ export async function initExperienceCarousel(reducedMotion = false) {
       carouselResizeRaf = requestAnimationFrame(() => {
         carouselResizeRaf = 0;
         updateCarouselLayout(swiperInstance, stageEl);
+        scheduleBubbleActivityUpdate(swiperInstance, stageEl);
       });
     };
 

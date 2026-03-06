@@ -1,19 +1,5 @@
 import { clear, el } from "./dom.js";
 
-const NAV_ITEMS = [
-  { id: "top", label: { en: "Top", vi: "\u0110\u1ea7u trang" } },
-  { id: "experience", label: { en: "Experience", vi: "Kinh nghi\u1ec7m" } },
-  { id: "skills", label: { en: "Skills", vi: "K\u1ef9 n\u0103ng" } },
-];
-
-function isMobileViewport() {
-  return window.matchMedia("(max-width: 767px)").matches;
-}
-
-function localizedLabel(labelMap, lang) {
-  return labelMap?.[lang] ?? labelMap?.en ?? "";
-}
-
 function activeName(content, lang) {
   if (!content?.meta) {
     return "Portfolio";
@@ -92,6 +78,24 @@ function createRollingTitle(text, id, tag = "h2", extraClass = "") {
   return title;
 }
 
+function createGlobeIcon() {
+  return el("svg", "navbar__control-icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
+    el("path", "", { d: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm7.8 9h-3.1a15.1 15.1 0 0 0-1.2-5A8 8 0 0 1 19.8 11ZM12 4.2c.9 0 2.3 2.1 2.9 6.8H9.1C9.7 6.3 11.1 4.2 12 4.2ZM8.5 6A15.1 15.1 0 0 0 7.3 11H4.2A8 8 0 0 1 8.5 6ZM4.2 13h3.1a15.1 15.1 0 0 0 1.2 5A8 8 0 0 1 4.2 13Zm7.8 6.8c-.9 0-2.3-2.1-2.9-6.8h5.8c-.6 4.7-2 6.8-2.9 6.8Zm3.5-1.8a15.1 15.1 0 0 0 1.2-5h3.1A8 8 0 0 1 15.5 18Z" }),
+  ]);
+}
+
+function createSunIcon() {
+  return el("svg", "navbar__control-icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
+    el("path", "", { d: "M12 5.5a1 1 0 0 1 1 1v.6a1 1 0 1 1-2 0v-.6a1 1 0 0 1 1-1Zm0 10.8a1 1 0 0 1 1 1v.6a1 1 0 1 1-2 0v-.6a1 1 0 0 1 1-1ZM6.4 8.1a1 1 0 0 1 1.4 0l.4.4a1 1 0 0 1-1.4 1.4l-.4-.4a1 1 0 0 1 0-1.4Zm8.9 8.9a1 1 0 0 1 1.4 0l.4.4a1 1 0 0 1-1.4 1.4l-.4-.4a1 1 0 0 1 0-1.4ZM5.5 12a1 1 0 0 1 1-1h.6a1 1 0 1 1 0 2h-.6a1 1 0 0 1-1-1Zm10.8 0a1 1 0 0 1 1-1h.6a1 1 0 1 1 0 2h-.6a1 1 0 0 1-1-1ZM6.8 17a1 1 0 0 1 1.4-1.4l.4.4a1 1 0 1 1-1.4 1.4l-.4-.4Zm8.9-8.9a1 1 0 0 1 1.4-1.4l.4.4a1 1 0 1 1-1.4 1.4l-.4-.4ZM12 8.3a3.7 3.7 0 1 1 0 7.4 3.7 3.7 0 0 1 0-7.4Z" }),
+  ]);
+}
+
+function createMoonIcon() {
+  return el("svg", "navbar__control-icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
+    el("path", "", { d: "M14.6 2.5a1 1 0 0 1 .8 1.5A8.5 8.5 0 1 0 20 15.6a1 1 0 0 1 1.5.8 10.5 10.5 0 1 1-7-13.9h.1Z" }),
+  ]);
+}
+
 function initialsFromName(name) {
   if (typeof name !== "string") {
     return "AV";
@@ -116,9 +120,6 @@ function applyHeroAvatarPlaceholder(core, displayName, lang) {
 function createHeroAvatar(meta, displayName, lang) {
   const avatarHref = safeHref(meta?.links?.avatar || meta?.avatar || meta?.photo || "");
   const wrapper = el("div", "hero__avatar", { "aria-label": lang === "vi" ? "Anh dai dien" : "Avatar" });
-
-  wrapper.appendChild(el("span", "hero__avatar-wave hero__avatar-wave--outer", { "aria-hidden": "true" }));
-  wrapper.appendChild(el("span", "hero__avatar-wave hero__avatar-wave--inner", { "aria-hidden": "true" }));
 
   const core = el("div", "hero__avatar-core");
   if (avatarHref) {
@@ -301,87 +302,95 @@ function createSkeleton() {
 }
 
 function createNavbarContent(state) {
-  const { content, lang, activeSection, drawerOpen, playMode } = state;
+  const { lang, playMode, theme } = state;
   const root = el("div", "navbar__card");
   const inner = el("div", "navbar__inner", { role: "navigation", "aria-label": "Main navigation" });
-  const name = activeName(content, lang);
-
-  inner.appendChild(
-    el("div", "navbar__left", {}, [
-      el("p", "navbar__name", { id: "navbar-name" }, [name]),
-    ]),
-  );
-
-  const links = el("nav", "navbar__links", { id: "nav-links", "aria-label": "Section links" });
-  NAV_ITEMS.forEach((item) => {
-    links.appendChild(
-      el("a", `navbar__link${activeSection === item.id ? " is-active" : ""}`, {
-        href: `#${item.id}`,
-        dataset: { section: item.id },
-      }, [localizedLabel(item.label, lang)]),
-    );
-  });
-  inner.appendChild(links);
+  const nextLang = lang === "vi" ? "en" : "vi";
+  const nextTheme = theme === "light" ? "dark" : "light";
+  const langLabel = lang === "vi" ? "VI" : "EN";
+  const themeIcon = theme === "light" ? createSunIcon() : createMoonIcon();
 
   const right = el("div", "navbar__right");
   right.appendChild(
-    el("div", "navbar__lang", { role: "group", "aria-label": "Language switcher" }, [
-      el("button", `navbar__lang-btn${lang === "en" ? " is-active" : ""}`, { type: "button", dataset: { lang: "en" }, "aria-pressed": lang === "en" ? "true" : "false" }, ["EN"]),
-      el("button", `navbar__lang-btn${lang === "vi" ? " is-active" : ""}`, { type: "button", dataset: { lang: "vi" }, "aria-pressed": lang === "vi" ? "true" : "false" }, ["VI"]),
-    ]),
+    el(
+      "button",
+      "navbar__control-btn navbar__control-btn--lang",
+      {
+        type: "button",
+        dataset: { langToggle: "true", langNext: nextLang },
+        "aria-label": lang === "vi" ? "Switch to English" : "Chuyen sang tieng Viet",
+      },
+      [
+        createGlobeIcon(),
+        el("span", "navbar__control-text", {}, [langLabel]),
+      ],
+    ),
   );
-  if (!isMobileViewport()) {
-    right.appendChild(
-      el(
-        "button",
-        `navbar__play-btn${playMode ? " is-active" : ""}`,
-        {
-          type: "button",
-          dataset: { playMode: "toggle" },
-          "aria-pressed": playMode ? "true" : "false",
-          "aria-label": lang === "vi" ? "Bat tat Play Mode" : "Toggle Play Mode",
-        },
-        [lang === "vi" ? "Play" : "Play"],
-      ),
-    );
-  }
   right.appendChild(
-    el("button", "navbar__icon-btn", {
-      type: "button",
-      id: "drawer-toggle",
-      "aria-label": lang === "vi" ? "M\u1edf menu" : "Open menu",
-      "aria-expanded": drawerOpen ? "true" : "false",
-      "aria-controls": "mobile-drawer",
-    }, ["\u2630"]),
+    el(
+      "button",
+      `navbar__control-btn navbar__control-btn--theme${theme === "light" ? " is-light" : " is-dark"}`,
+      {
+        type: "button",
+        dataset: { themeToggle: "true", themeNext: nextTheme },
+        "aria-label": theme === "light" ? "Switch to dark mode" : "Switch to light mode",
+      },
+      [
+        themeIcon,
+        el("span", "u-sr-only", {}, [theme === "light" ? "Dark mode" : "Light mode"]),
+      ],
+    ),
+  );
+  right.appendChild(
+    el(
+      "button",
+      `navbar__control-btn navbar__control-btn--hide${playMode ? " is-active" : ""}`,
+      {
+        type: "button",
+        dataset: { playMode: "toggle" },
+        "aria-pressed": playMode ? "true" : "false",
+        "aria-label": lang === "vi" ? "Bat tat Hide UI" : "Toggle Hide UI",
+      },
+      ["Hide UI"],
+    ),
   );
   inner.appendChild(right);
 
   root.appendChild(inner);
-
-  const drawer = el("div", `drawer${drawerOpen ? " is-open" : ""}`, {
-    id: "mobile-drawer",
-    role: "dialog",
-    "aria-modal": "true",
-    "aria-hidden": drawerOpen ? "false" : "true",
-  });
-  const panel = el("div", "drawer__panel", { tabindex: "-1" });
-  NAV_ITEMS.forEach((item) => {
-    panel.appendChild(
-      el("a", `drawer__item${activeSection === item.id ? " is-active" : ""}`, {
-        href: `#${item.id}`,
-        dataset: { section: item.id },
-      }, [localizedLabel(item.label, lang)]),
-    );
-  });
-  drawer.appendChild(panel);
-  root.appendChild(drawer);
   return root;
 }
 
 function createPlayModeScreen(state) {
   const name = activeName(state.content, state.lang);
+  const lang = state.lang;
+  const controls = el("div", "play-mode-screen__controls", {
+    role: "group",
+    "aria-label": lang === "vi" ? "Dieu khien mau fluid" : "Fluid color controls",
+  }, [
+    el(
+      "button",
+      "play-mode-screen__control",
+      {
+        type: "button",
+        dataset: { fluidPlay: "random" },
+        "aria-label": lang === "vi" ? "Mau ngau nhien" : "Random color",
+      },
+      [lang === "vi" ? "Mau ngau nhien" : "Random Color"],
+    ),
+    el(
+      "button",
+      "play-mode-screen__control",
+      {
+        type: "button",
+        dataset: { fluidPlay: "default" },
+        "aria-label": lang === "vi" ? "Mac dinh" : "Back to default",
+      },
+      [lang === "vi" ? "Mac dinh" : "Default"],
+    ),
+  ]);
   return el("section", "play-mode-screen reveal reveal--section", { id: "top", "aria-label": "Play mode" }, [
     el("p", "play-mode-screen__text", { "aria-hidden": "true" }, [name]),
+    controls,
   ]);
 }
 
@@ -421,14 +430,14 @@ function createHeroCard(state, content) {
   const cta = el("div", "hero__cta");
   cta.appendChild(
     createActionButton({
-      label: lang === "vi" ? "Li\u00ean h\u1ec7" : "Contact",
+      label: lang === "vi" ? "Lien he" : "Contact",
       href: emailHref || linkedinHref || "#top",
       kind: "primary",
     }),
   );
   const cvHref = safeHref(meta.links?.cv || "");
   if (state.cvAvailable && cvHref) {
-    cta.appendChild(createActionButton({ label: lang === "vi" ? "T\u1ea3i CV" : "Download CV", href: cvHref }));
+    cta.appendChild(createActionButton({ label: lang === "vi" ? "Tai CV" : "Download CV", href: cvHref }));
   }
   card.appendChild(cta);
   return card;
@@ -475,7 +484,7 @@ function createExperienceSection(content, lang) {
   return section;
 }
 
-function createExperienceCarouselSection(content, lang) {
+function createExperienceCarouselSection(content, lang, theme = "dark") {
   const experience = content.experience ?? {};
   const experienceItems = experience.items ?? [];
   const works = getDetailsWorkItems(content);
@@ -494,13 +503,21 @@ function createExperienceCarouselSection(content, lang) {
   const swiper = el("div", "swiper exp-carousel", { id: "experience-carousel-swiper" });
   const wrapper = el("div", "swiper-wrapper");
 
-  const palette = [
-    ["#05070c", "#070b16"],
-    ["#05070c", "#08121f"],
-    ["#05070c", "#0a1525"],
-    ["#05070c", "#091321"],
-    ["#05070c", "#0b1729"],
-  ];
+  const palette = theme === "light"
+    ? [
+      ["#f8fbff", "#edf4ff"],
+      ["#f7fbff", "#e9f1ff"],
+      ["#fbfdff", "#f0f5ff"],
+      ["#f6fbff", "#eaf2ff"],
+      ["#f9fcff", "#eef3ff"],
+    ]
+    : [
+      ["#05070c", "#070b16"],
+      ["#05070c", "#08121f"],
+      ["#05070c", "#0a1525"],
+      ["#05070c", "#091321"],
+      ["#05070c", "#0b1729"],
+    ];
 
   carouselItems.forEach((item, index) => {
     const colors = palette[index % palette.length];
@@ -700,7 +717,7 @@ export function renderApp(state) {
     fragment.appendChild(createPlayModeScreen(state));
   } else {
     fragment.appendChild(el("section", "section topband topband--single reveal reveal--section", { id: "top" }, [createHeroCard(state, state.content)]));
-    const experienceCarousel = createExperienceCarouselSection(state.content, state.lang);
+    const experienceCarousel = createExperienceCarouselSection(state.content, state.lang, state.theme);
     if (experienceCarousel) {
       fragment.appendChild(experienceCarousel);
     }

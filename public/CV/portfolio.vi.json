@@ -44,7 +44,7 @@
       {
         "date": "10/2025 - nay, An Giang",
         "role": "Kỹ sư phần mềm\nCông ty CP Phà An Giang (AGF)",
-        "desc": "Mục tiêu: xây dựng hệ thống bán/soát vé với quy mô hoạt động lớn.\nTech: Go, SQLite, REST API, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)",
+        "desc": "Mục tiêu: xây dựng hệ thống bán/soát vé với quy mô hoạt động lớn.\nTech: Go, SQLite, REST API, Windows scripting (.bat/PowerShell)",
         "images": [
           "./public/CV/images/placeholder-1.svg",
           "./public/CV/images/placeholder-2.svg",
@@ -66,7 +66,7 @@
       },
       {
         "key": "Backend",
-        "value": "REST API, JWT Auth, net/http"
+        "value": "REST API, JWT Auth, Net/HTTP"
       },
       {
         "key": "Cơ sở dữ liệu",
@@ -74,7 +74,7 @@
       },
       {
         "key": "Hệ thống",
-        "value": "Windows (PowerShell/.bat), Ubuntu, embedded Linux (NanoPi)"
+        "value": "Windows (PowerShell/.bat)"
       },
       {
         "key": "Vận hành",
@@ -151,7 +151,7 @@
             "Giảm đáng kể chi phí phụ thuộc bên thứ ba cho bán soát vé và duy trì server.",
             "Hệ thống dễ dùng và cài đặt cho cả người dùng non-tech."
           ],
-          "tech": "Go, SQLite, REST API, JWT Auth, Vanilla JS, Windows scripting (.bat/PowerShell), embedded Linux (NanoPi)"
+          "tech": "Go, SQLite, REST API, JWT Auth, Vanilla JS, Windows scripting (.bat/PowerShell)"
         }
       }
     ]
