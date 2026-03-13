@@ -21,7 +21,7 @@ const DEFAULT_FLUID_CONFIG = {
   COLOR_UPDATE_SPEED: 8,
   POINTER_COLOR_MULTIPLIER: 0.35,
   MONOCHROME: true,
-  MONO_COLOR: { r: 255, g: 255, b: 255 },
+  MONO_COLOR: { r: 219, g: 226, b: 235 },
   PAUSED: false,
   SUSPEND_WHEN_PAUSED: true,
   PAUSE_POLL_MS: 260,
@@ -33,17 +33,22 @@ const DEFAULT_FLUID_CONFIG = {
 };
 
 const MOBILE_BREAKPOINT_MAX = 767;
-const LIGHT_BG_COLOR = { r: 239, g: 242, b: 245 };
 const DARK_BG_COLOR = { r: 0, g: 0, b: 0 };
-const PLAY_DEFAULT_MONO_COLOR = { r: 166, g: 174, b: 188 };
+const PLAY_DEFAULT_MONO_COLOR = { r: 194, g: 204, b: 216 };
+const FLUID_IDLE_PAUSE_MS = 900;
 
 let resizeHandler = null;
 let visibilityHandler = null;
 let pageHideHandler = null;
 let pageShowHandler = null;
+let wakeFluidHandler = null;
+let idlePauseTimer = 0;
 let resizeRaf = 0;
 let idleInitToken = null;
 let fluidApi = null;
+let fluidInitPromise = null;
+let fluidInitialized = false;
+let fluidUnavailable = false;
 let fluidBaseConfig = {
   SPLAT_RADIUS: DEFAULT_FLUID_CONFIG.SPLAT_RADIUS,
   SPLAT_FORCE: DEFAULT_FLUID_CONFIG.SPLAT_FORCE,
@@ -52,8 +57,8 @@ let fluidBaseConfig = {
   POINTER_COLOR_MULTIPLIER: DEFAULT_FLUID_CONFIG.POINTER_COLOR_MULTIPLIER,
 };
 let fluidPlayModeEnabled = false;
-let fluidTheme = "dark";
 let fluidPlayModeColorOverride = null;
+let fluidPaused = false;
 
 const PLAY_RADIUS_MULTIPLIER = 1.4;
 const PLAY_FORCE_MULTIPLIER = 1.3;
@@ -66,7 +71,7 @@ function isMobileViewport() {
 }
 
 function getFluidBackgroundColor() {
-  return fluidTheme === "light" ? { ...LIGHT_BG_COLOR } : { ...DARK_BG_COLOR };
+  return { ...DARK_BG_COLOR };
 }
 
 function getFluidCanvasColorCss() {
@@ -158,33 +163,45 @@ function computeFluidPreset() {
   if (lowTier) {
     return {
       TRIGGER: trigger,
-      SIM_RESOLUTION: 56,
-      DYE_RESOLUTION: 448,
-      PRESSURE_ITERATIONS: 10,
-      SPLAT_FORCE: 620,
-      SPLAT_RADIUS: 0.048,
-      PIXEL_RATIO_CAP: 1.2,
-      POINTER_DELTA_LIMIT: 0.01,
+      SIM_RESOLUTION: 32,
+      DYE_RESOLUTION: 256,
+      PRESSURE_ITERATIONS: 7,
+      SPLAT_FORCE: 460,
+      SPLAT_RADIUS: 0.041,
+      PIXEL_RATIO_CAP: 1,
+      POINTER_DELTA_LIMIT: 0.008,
+      SHADING: false,
+      CURL: 9,
+      PAUSE_POLL_MS: 460,
     };
   }
 
   if (midTier) {
     return {
       TRIGGER: trigger,
-      SIM_RESOLUTION: 72,
-      DYE_RESOLUTION: 560,
-      PRESSURE_ITERATIONS: 11,
-      SPLAT_FORCE: 680,
-      PIXEL_RATIO_CAP: 1.4,
+      SIM_RESOLUTION: 44,
+      DYE_RESOLUTION: 320,
+      PRESSURE_ITERATIONS: 8,
+      SPLAT_FORCE: 540,
+      PIXEL_RATIO_CAP: 1.05,
+      POINTER_DELTA_LIMIT: 0.01,
+      SHADING: false,
+      CURL: 10,
+      PAUSE_POLL_MS: 400,
     };
   }
 
   return {
     TRIGGER: trigger,
-    SIM_RESOLUTION: 88,
-    DYE_RESOLUTION: 640,
-    PRESSURE_ITERATIONS: 12,
-    PIXEL_RATIO_CAP: 1.6,
+    SIM_RESOLUTION: 56,
+    DYE_RESOLUTION: 416,
+    PRESSURE_ITERATIONS: 9,
+    SPLAT_FORCE: 600,
+    SHADING: false,
+    CURL: 10,
+    PIXEL_RATIO_CAP: 1.15,
+    POINTER_DELTA_LIMIT: 0.011,
+    PAUSE_POLL_MS: 360,
   };
 }
 
@@ -205,10 +222,51 @@ function cleanupFluidListeners() {
     window.removeEventListener("pageshow", pageShowHandler);
     pageShowHandler = null;
   }
+  if (wakeFluidHandler) {
+    window.removeEventListener("pointermove", wakeFluidHandler);
+    window.removeEventListener("pointerdown", wakeFluidHandler);
+    window.removeEventListener("touchmove", wakeFluidHandler);
+    wakeFluidHandler = null;
+  }
   if (resizeRaf) {
     cancelAnimationFrame(resizeRaf);
     resizeRaf = 0;
   }
+  if (idlePauseTimer) {
+    window.clearTimeout(idlePauseTimer);
+    idlePauseTimer = 0;
+  }
+}
+
+function setFluidPaused(nextPaused) {
+  const normalized = Boolean(nextPaused);
+  if (fluidPaused === normalized) {
+    return;
+  }
+  fluidPaused = normalized;
+  fluidApi?.setConfig?.({ PAUSED: normalized });
+}
+
+function scheduleFluidIdlePause() {
+  if (idlePauseTimer) {
+    window.clearTimeout(idlePauseTimer);
+  }
+
+  idlePauseTimer = window.setTimeout(() => {
+    idlePauseTimer = 0;
+    if (!fluidApi || document.hidden || isMobileViewport()) {
+      return;
+    }
+    setFluidPaused(true);
+  }, FLUID_IDLE_PAUSE_MS);
+}
+
+function wakeFluid() {
+  if (!fluidApi || document.hidden || isMobileViewport()) {
+    return;
+  }
+  setFluidPaused(false);
+  scheduleFluidIdlePause();
 }
 
 function applyFluidPlayModeConfig() {
@@ -238,10 +296,9 @@ function applyFluidPlayModeConfig() {
   const nextColorMultiplier = fluidPlayModeEnabled
     ? Number((baseColorMultiplier * PLAY_COLOR_MULTIPLIER).toFixed(4))
     : baseColorMultiplier;
-  const lightTheme = fluidTheme === "light";
   const defaultMonoColor = fluidPlayModeEnabled
     ? { ...PLAY_DEFAULT_MONO_COLOR }
-    : (lightTheme ? { r: 0, g: 0, b: 0 } : { ...DEFAULT_FLUID_CONFIG.MONO_COLOR });
+    : { ...DEFAULT_FLUID_CONFIG.MONO_COLOR };
   const monoColor = normalizeRgbColor(fluidPlayModeColorOverride) ?? defaultMonoColor;
 
   fluidApi.setConfig({
@@ -249,9 +306,7 @@ function applyFluidPlayModeConfig() {
     SPLAT_FORCE: nextForce,
     POINTER_DELTA_LIMIT: nextDeltaLimit,
     DENSITY_DISSIPATION: nextDensity,
-    POINTER_COLOR_MULTIPLIER: lightTheme
-      ? Number((nextColorMultiplier * 0.92).toFixed(4))
-      : nextColorMultiplier,
+    POINTER_COLOR_MULTIPLIER: nextColorMultiplier,
     MONO_COLOR: monoColor,
     BACK_COLOR: getFluidBackgroundColor(),
     TRANSPARENT: false,
@@ -264,22 +319,7 @@ export function setFluidPlayMode(isEnabled) {
     fluidPlayModeColorOverride = null;
   }
   applyFluidPlayModeConfig();
-}
-
-export function setFluidTheme(theme) {
-  const previousTheme = fluidTheme;
-  fluidTheme = theme === "light" ? "light" : "dark";
-  if (!fluidPlayModeEnabled) {
-    fluidPlayModeColorOverride = null;
-  }
-  const canvas = document.getElementById("bg-canvas");
-  if (canvas) {
-    canvas.style.background = getFluidCanvasColorCss();
-  }
-  applyFluidPlayModeConfig();
-  if (fluidApi?.reset && previousTheme !== fluidTheme) {
-    fluidApi.reset();
-  }
+  wakeFluid();
 }
 
 export function randomizeFluidPlayModeColor() {
@@ -296,7 +336,7 @@ export function resetFluidPlayModeColor() {
   applyFluidPlayModeConfig();
 }
 
-export function initFluidBackground() {
+function initFluidBackgroundInternal() {
   return new Promise((resolve) => {
     const canvas = document.getElementById("bg-canvas");
     if (!canvas) {
@@ -318,6 +358,7 @@ export function initFluidBackground() {
 
     if (isMobileViewport()) {
       setCanvasActive(canvas, false);
+      fluidPaused = true;
       resolve(false);
       return;
     }
@@ -336,6 +377,8 @@ export function initFluidBackground() {
           ...mergedConfig,
         });
         fluidApi = api;
+        fluidUnavailable = false;
+        fluidPaused = false;
         fluidBaseConfig = {
           SPLAT_RADIUS: mergedConfig.SPLAT_RADIUS,
           SPLAT_FORCE: mergedConfig.SPLAT_FORCE,
@@ -345,6 +388,7 @@ export function initFluidBackground() {
         };
         applyFluidPlayModeConfig();
         applyCanvasViewport(canvas, api);
+        setFluidPaused(true);
 
         resizeHandler = () => {
           if (resizeRaf) {
@@ -354,34 +398,58 @@ export function initFluidBackground() {
             resizeRaf = 0;
             if (isMobileViewport()) {
               setCanvasActive(canvas, false);
-              api.setConfig?.({ PAUSED: true });
+              setFluidPaused(true);
               return;
             }
             setCanvasActive(canvas, true);
-            api.setConfig?.({ PAUSED: document.hidden });
             applyCanvasViewport(canvas, api);
+            if (document.hidden) {
+              setFluidPaused(true);
+              return;
+            }
+            scheduleFluidIdlePause();
           });
         };
         window.addEventListener("resize", resizeHandler, { passive: true });
 
         visibilityHandler = () => {
-          api.setConfig?.({ PAUSED: document.hidden });
+          if (document.hidden) {
+            setFluidPaused(true);
+            if (idlePauseTimer) {
+              window.clearTimeout(idlePauseTimer);
+              idlePauseTimer = 0;
+            }
+            return;
+          }
+          scheduleFluidIdlePause();
         };
         pageHideHandler = () => {
-          api.setConfig?.({ PAUSED: true });
+          setFluidPaused(true);
         };
         pageShowHandler = () => {
-          api.setConfig?.({ PAUSED: document.hidden });
+          if (document.hidden || isMobileViewport()) {
+            setFluidPaused(true);
+            return;
+          }
+          scheduleFluidIdlePause();
+        };
+        wakeFluidHandler = () => {
+          wakeFluid();
         };
         document.addEventListener("visibilitychange", visibilityHandler, { passive: true });
         window.addEventListener("pagehide", pageHideHandler, { passive: true });
         window.addEventListener("pageshow", pageShowHandler, { passive: true });
+        window.addEventListener("pointermove", wakeFluidHandler, { passive: true });
+        window.addEventListener("pointerdown", wakeFluidHandler, { passive: true });
+        window.addEventListener("touchmove", wakeFluidHandler, { passive: true });
+        scheduleFluidIdlePause();
         idleInitToken = null;
         resolve(true);
       } catch (error) {
         console.warn("Fluid background unavailable:", error);
         canvas.style.background = getFluidCanvasColorCss();
         fluidApi = null;
+        fluidUnavailable = true;
         idleInitToken = null;
         resolve(false);
       }
@@ -393,4 +461,34 @@ export function initFluidBackground() {
       idleInitToken = window.setTimeout(init, 16);
     }
   });
+}
+
+export function initFluidBackground() {
+  if (fluidInitialized && fluidApi) {
+    return Promise.resolve(true);
+  }
+
+  if (fluidUnavailable) {
+    return Promise.resolve(false);
+  }
+
+  if (fluidInitPromise) {
+    return fluidInitPromise;
+  }
+
+  fluidInitPromise = initFluidBackgroundInternal()
+    .then((result) => {
+      fluidInitPromise = null;
+      if (result) {
+        fluidInitialized = true;
+      }
+      return result;
+    })
+    .catch((error) => {
+      fluidInitPromise = null;
+      fluidUnavailable = true;
+      throw error;
+    });
+
+  return fluidInitPromise;
 }

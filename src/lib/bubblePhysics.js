@@ -2,13 +2,43 @@ const GROUP_SELECTOR = ".experience-tile__media-bubbles, .exp-carousel__media-bu
 const BUBBLE_SELECTOR = ".experience-tile__media-bubble, .exp-carousel__media-bubble";
 const RESTITUTION = 0.94;
 const SPEED_MULTIPLIER = 0.9;
-const MIN_SPEED = 22;
-const MAX_SPEED = 42;
+const MIN_SPEED = 18;
+const MAX_SPEED = 34;
+const MAX_FRAME_STEP_MS = 1000 / 24;
 
 let groups = [];
 let rafId = 0;
 let lastTickMs = 0;
 let resizeObserver = null;
+let visibilityObserver = null;
+let activityObserver = null;
+
+function setGroupBubbleActive(group, isActive) {
+  if (!group?.container?.isConnected) {
+    return;
+  }
+  const nextValue = isActive ? "true" : "false";
+  if (group.container.getAttribute("data-bubbles-active") === nextValue) {
+    return;
+  }
+  group.container.setAttribute("data-bubbles-active", nextValue);
+}
+
+function resolveStandaloneActiveGroup(preferredGroup = null) {
+  const standaloneGroups = groups.filter((group) => !group.carouselGroup && group.container.isConnected && group.visible !== false);
+  if (!standaloneGroups.length) {
+    return;
+  }
+
+  const activeGroup = standaloneGroups.includes(preferredGroup)
+    ? preferredGroup
+    : standaloneGroups.find((group) => group.host?.matches?.(":hover, :focus-within"))
+      || null;
+
+  standaloneGroups.forEach((group) => {
+    setGroupBubbleActive(group, group === activeGroup);
+  });
+}
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -50,12 +80,36 @@ function updateGroupBounds(group) {
   resolveOverlaps(group.bubbles, width, height);
 }
 
+function resetGroupToSeededLayout(group) {
+  const width = Math.max(1, group.container.clientWidth);
+  const height = Math.max(1, group.container.clientHeight);
+
+  group.width = width;
+  group.height = height;
+  group.dirty = false;
+
+  group.bubbles.forEach((bubble) => {
+    const measuredRadius = Math.max(8, Math.min(bubble.el.offsetWidth, bubble.el.offsetHeight) * 0.5);
+    bubble.r = measuredRadius;
+    bubble.mass = Math.max(1, measuredRadius * measuredRadius * 0.01);
+    bubble.x = clamp(bubble.xRatio * width, measuredRadius, Math.max(measuredRadius, width - measuredRadius));
+    bubble.y = clamp(bubble.yRatio * height, measuredRadius, Math.max(measuredRadius, height - measuredRadius));
+    bubble.renderX = Number.NaN;
+    bubble.renderY = Number.NaN;
+  });
+
+  resolveOverlaps(group.bubbles, width, height);
+  renderGroup(group);
+  group.staticRendered = true;
+}
+
 function isGroupActive(group) {
-  if (!group.carouselGroup) {
-    return true;
-  }
   const flag = group.container.getAttribute("data-bubbles-active");
   return flag !== "false";
+}
+
+function isGroupRenderable(group) {
+  return Boolean(group?.container?.isConnected) && group.visible !== false && isGroupActive(group);
 }
 
 function createBubbleState(el, index, width, height) {
@@ -75,6 +129,8 @@ function createBubbleState(el, index, width, height) {
     el,
     x,
     y,
+    xRatio,
+    yRatio,
     vx,
     vy,
     r,
@@ -83,7 +139,7 @@ function createBubbleState(el, index, width, height) {
 }
 
 function resolveOverlaps(bubbles, width, height) {
-  for (let loop = 0; loop < 6; loop += 1) {
+  for (let loop = 0; loop < 4; loop += 1) {
     for (let i = 0; i < bubbles.length; i += 1) {
       const a = bubbles[i];
       for (let j = i + 1; j < bubbles.length; j += 1) {
@@ -189,14 +245,50 @@ function renderGroup(group) {
   group.bubbles.forEach((bubble) => {
     const tx = bubble.x - bubble.r;
     const ty = bubble.y - bubble.r;
+    if (Math.abs((bubble.renderX ?? Number.NaN) - tx) < 0.08 && Math.abs((bubble.renderY ?? Number.NaN) - ty) < 0.08) {
+      return;
+    }
+    bubble.renderX = tx;
+    bubble.renderY = ty;
     bubble.el.style.transform = `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0)`;
   });
 }
 
+function stopLoop() {
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+  lastTickMs = 0;
+}
+
+function hasRenderableGroups() {
+  return groups.some((group) => isGroupRenderable(group));
+}
+
+function ensureLoop() {
+  if (!rafId && hasRenderableGroups()) {
+    rafId = requestAnimationFrame(tick);
+  }
+}
+
 function tick(nowMs) {
+  rafId = 0;
+
   if (!groups.length) {
     rafId = 0;
     lastTickMs = 0;
+    return;
+  }
+
+  groups = groups.filter((group) => group.container.isConnected);
+  if (!groups.length || !hasRenderableGroups()) {
+    stopLoop();
+    return;
+  }
+
+  if (lastTickMs && (nowMs - lastTickMs) < MAX_FRAME_STEP_MS) {
+    ensureLoop();
     return;
   }
 
@@ -205,16 +297,11 @@ function tick(nowMs) {
     : (1 / 60);
   lastTickMs = nowMs;
 
-  groups = groups.filter((group) => group.container.isConnected);
-  if (!groups.length) {
-    rafId = 0;
-    lastTickMs = 0;
-    return;
-  }
-
   groups.forEach((group) => {
-    const groupActive = isGroupActive(group);
-    if (!groupActive) {
+    if (!isGroupRenderable(group)) {
+      if (group.wasActive || group.dirty || !group.staticRendered) {
+        resetGroupToSeededLayout(group);
+      }
       group.wasActive = false;
       return;
     }
@@ -222,15 +309,22 @@ function tick(nowMs) {
       group.dirty = true;
       group.wasActive = true;
     }
-    updateGroupBounds(group);
+    group.staticRendered = false;
+    if (group.dirty) {
+      updateGroupBounds(group);
+    }
     integrateGroup(group, dtSec);
     renderGroup(group);
   });
 
-  rafId = requestAnimationFrame(tick);
+  ensureLoop();
 }
 
 function teardownGroup(group) {
+  group.host?.removeEventListener("pointerenter", group.onPointerEnter);
+  group.host?.removeEventListener("pointerleave", group.onPointerLeave);
+  group.host?.removeEventListener("focusin", group.onFocusIn);
+  group.host?.removeEventListener("focusout", group.onFocusOut);
   group.bubbles.forEach((bubble) => {
     bubble.el.classList.remove("is-physics");
     bubble.el.style.transform = "";
@@ -240,18 +334,22 @@ function teardownGroup(group) {
 }
 
 export function destroyBubblePhysics() {
-  if (rafId) {
-    cancelAnimationFrame(rafId);
-    rafId = 0;
-  }
+  stopLoop();
   if (resizeObserver) {
     resizeObserver.disconnect();
     resizeObserver = null;
   }
+  if (visibilityObserver) {
+    visibilityObserver.disconnect();
+    visibilityObserver = null;
+  }
+  if (activityObserver) {
+    activityObserver.disconnect();
+    activityObserver = null;
+  }
 
   groups.forEach((group) => teardownGroup(group));
   groups = [];
-  lastTickMs = 0;
 }
 
 export function initBubblePhysics() {
@@ -269,8 +367,46 @@ export function initBubblePhysics() {
         const group = groups.find((item) => item.container === target);
         if (group) {
           group.dirty = true;
+          ensureLoop();
         }
       });
+    })
+    : null;
+
+  visibilityObserver = typeof IntersectionObserver === "function"
+    ? new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const group = groups.find((item) => item.container === entry.target);
+        if (!group) {
+          return;
+        }
+        group.visible = entry.isIntersecting;
+      });
+
+      resolveStandaloneActiveGroup();
+
+      if (hasRenderableGroups()) {
+        ensureLoop();
+      } else {
+        stopLoop();
+      }
+    }, {
+      root: null,
+      rootMargin: "120px 0px 120px 0px",
+      threshold: 0.01,
+    })
+    : null;
+
+  activityObserver = typeof MutationObserver === "function"
+    ? new MutationObserver((entries) => {
+      if (!entries.length) {
+        return;
+      }
+      if (hasRenderableGroups()) {
+        ensureLoop();
+      } else {
+        stopLoop();
+      }
     })
     : null;
 
@@ -291,17 +427,69 @@ export function initBubblePhysics() {
 
     resolveOverlaps(bubbles, width, height);
 
-    groups.push({
+    const carouselGroup = container.classList.contains("exp-carousel__media-bubbles");
+    const host = container.closest(".experience-timeline__card, .experience-tile, .exp-carousel__card");
+    const onPointerEnter = () => {
+      if (carouselGroup) {
+        return;
+      }
+      resolveStandaloneActiveGroup(groupRef);
+      ensureLoop();
+    };
+    const onPointerLeave = () => {
+      if (carouselGroup) {
+        return;
+      }
+      resolveStandaloneActiveGroup();
+    };
+    const onFocusIn = () => {
+      if (carouselGroup) {
+        return;
+      }
+      resolveStandaloneActiveGroup(groupRef);
+      ensureLoop();
+    };
+    const onFocusOut = (event) => {
+      if (carouselGroup || host?.contains(event.relatedTarget)) {
+        return;
+      }
+      resolveStandaloneActiveGroup();
+    };
+
+    const groupRef = {
       container,
+      host,
       bubbles,
       width,
       height,
       dirty: false,
-      carouselGroup: container.classList.contains("exp-carousel__media-bubbles"),
-      wasActive: true,
-    });
+      carouselGroup,
+      staticRendered: false,
+      wasActive: false,
+      visible: true,
+      onPointerEnter,
+      onPointerLeave,
+      onFocusIn,
+      onFocusOut,
+    };
+
+    if (host && !carouselGroup) {
+      host.addEventListener("pointerenter", onPointerEnter, { passive: true });
+      host.addEventListener("pointerleave", onPointerLeave, { passive: true });
+      host.addEventListener("focusin", onFocusIn);
+      host.addEventListener("focusout", onFocusOut);
+    }
+
+    groups.push(groupRef);
+    setGroupBubbleActive(groupRef, carouselGroup);
+    resetGroupToSeededLayout(groupRef);
 
     resizeObserver?.observe(container);
+    visibilityObserver?.observe(container);
+    activityObserver?.observe(container, {
+      attributes: true,
+      attributeFilter: ["data-bubbles-active"],
+    });
   });
 
   if (!groups.length) {
@@ -310,5 +498,6 @@ export function initBubblePhysics() {
     return;
   }
 
-  rafId = requestAnimationFrame(tick);
+  resolveStandaloneActiveGroup();
+  ensureLoop();
 }

@@ -215,17 +215,6 @@ function applyResponsiveCarouselVars(stageEl) {
   };
 }
 
-function coverflowForStageWidth(stageWidth) {
-  const ratio = clamp((stageWidth - 280) / (1240 - 280), 0, 1);
-  return {
-    rotate: 0,
-    stretch: Math.round(24 + ratio * (90 - 24)),
-    depth: Math.round(105 + ratio * (200 - 105)),
-    modifier: Number((1 + ratio * 0.15).toFixed(2)),
-    slideShadows: false,
-  };
-}
-
 function updateCarouselLayout(swiper, stageEl) {
   if (!swiper || swiper.destroyed || !stageEl?.isConnected) {
     return;
@@ -233,6 +222,8 @@ function updateCarouselLayout(swiper, stageEl) {
 
   const layout = applyResponsiveCarouselVars(stageEl);
   const slideWidthPx = `${layout.slideWidth}px`;
+  const isMobile = (window.innerWidth || document.documentElement.clientWidth || 0) <= 767;
+  const nextSpaceBetween = isMobile ? 12 : 18;
   swiper.slides.forEach((slide) => {
     if (!(slide instanceof HTMLElement)) {
       return;
@@ -247,34 +238,22 @@ function updateCarouselLayout(swiper, stageEl) {
       slide.style.maxWidth = slideWidthPx;
     }
   });
-  const nextEffect = coverflowForStageWidth(layout.stageWidth);
   const nextLayoutKey = [
     layout.slideWidth,
     layout.slideHeight,
     layout.arrowWidth,
     layout.arrowHeight,
     layout.arrowIcon,
-    nextEffect.stretch,
-    nextEffect.depth,
-    nextEffect.modifier,
+    nextSpaceBetween,
   ].join("|");
   if (nextLayoutKey === carouselLayoutKey) {
     return;
   }
   carouselLayoutKey = nextLayoutKey;
 
-  const currentEffect = swiper.params.coverflowEffect || {};
-  const changed =
-    currentEffect.stretch !== nextEffect.stretch
-    || currentEffect.depth !== nextEffect.depth
-    || currentEffect.modifier !== nextEffect.modifier;
-
-  if (changed) {
-    swiper.params.coverflowEffect = { ...currentEffect, ...nextEffect };
-    swiper.originalParams.coverflowEffect = {
-      ...(swiper.originalParams.coverflowEffect || {}),
-      ...nextEffect,
-    };
+  if (swiper.params.spaceBetween !== nextSpaceBetween) {
+    swiper.params.spaceBetween = nextSpaceBetween;
+    swiper.originalParams.spaceBetween = nextSpaceBetween;
   }
 
   swiper.update();
@@ -367,7 +346,7 @@ export async function initExperienceCarousel(reducedMotion = false) {
   }
 
   const layout = applyResponsiveCarouselVars(stageEl);
-  const initialEffect = coverflowForStageWidth(layout.stageWidth);
+  const initialSpaceBetween = (window.innerWidth || document.documentElement.clientWidth || 0) <= 767 ? 12 : 18;
 
   try {
     await loadSwiperStyle();
@@ -377,10 +356,10 @@ export async function initExperienceCarousel(reducedMotion = false) {
     }
 
     swiperInstance = new SwiperRef(carouselEl, {
-      effect: "coverflow",
       grabCursor: canCycle,
       centeredSlides: true,
       slidesPerView: "auto",
+      spaceBetween: initialSpaceBetween,
       loop: false,
       rewind: canCycle,
       watchOverflow: false,
@@ -395,9 +374,8 @@ export async function initExperienceCarousel(reducedMotion = false) {
       touchStartPreventDefault: false,
       touchReleaseOnEdges: true,
       passiveListeners: true,
-      speed: reducedMotion ? 0 : 900,
+      speed: reducedMotion ? 0 : 760,
       watchSlidesProgress: canCycle,
-      coverflowEffect: initialEffect,
       navigation: {
         nextEl: ".exp-carousel-next",
         prevEl: ".exp-carousel-prev",
@@ -414,7 +392,6 @@ export async function initExperienceCarousel(reducedMotion = false) {
         },
         progress(sw) {
           scheduleProgressUpdate(sw);
-          scheduleBubbleActivityUpdate(sw, stageEl);
         },
         slideChangeTransitionStart(sw) {
           updateStageBackground(sw, stageEl);
