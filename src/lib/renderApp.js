@@ -1,4 +1,4 @@
-﻿import { clear, el } from "./dom.js";
+import { clear, el } from "./dom.js";
 
 function activeName(content, lang) {
   if (!content?.meta) {
@@ -60,24 +60,39 @@ function createCircleAction({ label, href, iconSvg, className = "", tip = "" }) 
   );
 }
 
-function createMotifCluster(extraClass = "") {
-  const className = extraClass ? `motif-cluster ${extraClass}` : "motif-cluster";
-  return el("div", className, { "aria-hidden": "true" }, [
-    el("span", "motif-cluster__dot motif-cluster__dot--cyan"),
-    el("span", "motif-cluster__dot motif-cluster__dot--green"),
-    el("span", "motif-cluster__dot motif-cluster__dot--red"),
-  ]);
-}
-
 function createRollingTitle(text, id, tag = "h2", extraClass = "") {
   const safeText = (text || "").trim() || "Experience";
   const className = extraClass ? `rolling-title ${extraClass}` : "rolling-title";
-  return el(tag, className, { id }, [safeText]);
+  const title = el(tag, className, { id, tabindex: "0", "aria-label": safeText });
+  const srText = el("span", "u-sr-only", {}, [safeText]);
+  const visual = el("span", "rolling-title__visual", { "aria-hidden": "true" });
+
+  Array.from(safeText).forEach((char, index) => {
+    const cell = el("span", `rolling-title__cell${char === " " ? " is-space" : ""}`);
+    cell.style.setProperty("--roll-index", String(index));
+    cell.appendChild(el("span", "rolling-title__char", {}, [char === " " ? "\u00a0" : char]));
+    visual.appendChild(cell);
+  });
+
+  title.append(srText, visual);
+  return title;
 }
 
 function createGlobeIcon() {
   return el("svg", "navbar__control-icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
     el("path", "", { d: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm7.8 9h-3.1a15.1 15.1 0 0 0-1.2-5A8 8 0 0 1 19.8 11ZM12 4.2c.9 0 2.3 2.1 2.9 6.8H9.1C9.7 6.3 11.1 4.2 12 4.2ZM8.5 6A15.1 15.1 0 0 0 7.3 11H4.2A8 8 0 0 1 8.5 6ZM4.2 13h3.1a15.1 15.1 0 0 0 1.2 5A8 8 0 0 1 4.2 13Zm7.8 6.8c-.9 0-2.3-2.1-2.9-6.8h5.8c-.6 4.7-2 6.8-2.9 6.8Zm3.5-1.8a15.1 15.1 0 0 0 1.2-5h3.1A8 8 0 0 1 15.5 18Z" }),
+  ]);
+}
+
+function createSunIcon() {
+  return el("svg", "navbar__control-icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
+    el("path", "", { d: "M12 5.5a1 1 0 0 1 1 1v.6a1 1 0 1 1-2 0v-.6a1 1 0 0 1 1-1Zm0 10.8a1 1 0 0 1 1 1v.6a1 1 0 1 1-2 0v-.6a1 1 0 0 1 1-1ZM6.4 8.1a1 1 0 0 1 1.4 0l.4.4a1 1 0 0 1-1.4 1.4l-.4-.4a1 1 0 0 1 0-1.4Zm8.9 8.9a1 1 0 0 1 1.4 0l.4.4a1 1 0 0 1-1.4 1.4l-.4-.4a1 1 0 0 1 0-1.4ZM5.5 12a1 1 0 0 1 1-1h.6a1 1 0 1 1 0 2h-.6a1 1 0 0 1-1-1Zm10.8 0a1 1 0 0 1 1-1h.6a1 1 0 1 1 0 2h-.6a1 1 0 0 1-1-1ZM6.8 17a1 1 0 0 1 1.4-1.4l.4.4a1 1 0 1 1-1.4 1.4l-.4-.4Zm8.9-8.9a1 1 0 0 1 1.4-1.4l.4.4a1 1 0 1 1-1.4 1.4l-.4-.4ZM12 8.3a3.7 3.7 0 1 1 0 7.4 3.7 3.7 0 0 1 0-7.4Z" }),
+  ]);
+}
+
+function createMoonIcon() {
+  return el("svg", "navbar__control-icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
+    el("path", "", { d: "M14.6 2.5a1 1 0 0 1 .8 1.5A8.5 8.5 0 1 0 20 15.6a1 1 0 0 1 1.5.8 10.5 10.5 0 1 1-7-13.9h.1Z" }),
   ]);
 }
 
@@ -98,19 +113,19 @@ function initialsFromName(name) {
 function applyHeroAvatarPlaceholder(core, displayName, lang) {
   core.replaceChildren(
     el("span", "hero__avatar-placeholder", { "aria-hidden": "true" }, [initialsFromName(displayName)]),
-    el("span", "u-sr-only", {}, [lang === "vi" ? "Chỗ đặt ảnh đại diện tạm thời" : "Temporary avatar placeholder"]),
+    el("span", "u-sr-only", {}, [lang === "vi" ? "Cho dat anh dai dien tam thoi" : "Temporary avatar placeholder"]),
   );
 }
 
 function createHeroAvatar(meta, displayName, lang) {
   const avatarHref = safeHref(meta?.links?.avatar || meta?.avatar || meta?.photo || "");
-  const wrapper = el("div", "hero__avatar", { "aria-label": lang === "vi" ? "Ảnh đại diện" : "Avatar" });
+  const wrapper = el("div", "hero__avatar", { "aria-label": lang === "vi" ? "Anh dai dien" : "Avatar" });
 
   const core = el("div", "hero__avatar-core");
   if (avatarHref) {
     const imageNode = el("img", "hero__avatar-img", {
       src: avatarHref,
-      alt: lang === "vi" ? "Ảnh đại diện" : "Avatar",
+      alt: lang === "vi" ? "Anh dai dien" : "Avatar",
       loading: "lazy",
       decoding: "async",
       draggable: "false",
@@ -127,51 +142,6 @@ function createHeroAvatar(meta, displayName, lang) {
 
   wrapper.appendChild(core);
   return wrapper;
-}
-
-function splitRoleParts(rawRole) {
-  const lines = normalizeRoleText(rawRole)
-    .split(/\n+/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  return {
-    title: lines[0] ?? "",
-    company: lines.slice(1).join(" • "),
-  };
-}
-
-function deriveHeroRoleLine(content, lang) {
-  const base = lang === "vi"
-    ? "Kỹ sư phần mềm Full-stack"
-    : "Full-stack Software Engineer";
-  const focus = lang === "vi"
-    ? "Backend, Desktop App, Vận hành hệ thống"
-    : "Backend, Desktop App, System Operations";
-  return `${base} • ${focus}`;
-}
-
-function deriveCurrentRole(content) {
-  const latest = (content?.experience?.items ?? []).slice(-1)[0] ?? {};
-  return splitRoleParts(latest.role);
-}
-
-function createHeroProfilePanel(content, lang, displayName) {
-  const currentRole = deriveCurrentRole(content);
-
-  const profile = el("aside", "hero__profile", { "aria-label": lang === "vi" ? "Tóm tắt hồ sơ" : "Profile summary" });
-  const top = el("div", "hero__profile-top", {}, [
-    createHeroAvatar(content.meta ?? {}, displayName, lang),
-    el("div", "hero__profile-copy", {}, [
-      el("p", "hero__profile-label", {}, [lang === "vi" ? "Hiện tại" : "Currently"]),
-      el("h3", "hero__profile-role", {}, [currentRole.title || (lang === "vi" ? "Kỹ sư phần mềm" : "Software Engineer")]),
-      el("p", "hero__profile-company", {}, [currentRole.company || (lang === "vi" ? "Đang xây hệ thống thực tế" : "Building production systems")]),
-    ]),
-    createMotifCluster("hero__motif"),
-  ]);
-
-  profile.appendChild(top);
-  return profile;
 }
 
 function normalizeDescLines(rawDesc) {
@@ -253,26 +223,10 @@ function imageSeed(src, index) {
   return Math.abs(hash) + (index + 1) * 97;
 }
 
-function createExperienceMedia(item, className, options = {}) {
+function createExperienceMedia(item, className) {
   const media = el("div", className, { "aria-hidden": "true" });
   const imageLinks = normalizeExperienceImageLinks(item);
-  if (options.showMeta === true) {
-    const lang = options.lang === "vi" ? "vi" : "en";
-    const meta = el("div", `${className}-meta`, {}, [
-      el("span", `${className}-label`, {}, [options.label || "Stack"]),
-      el("span", `${className}-count`, {}, [
-        imageLinks.length
-          ? String(imageLinks.length).padStart(2, "0")
-          : (lang === "vi" ? "--" : "--"),
-      ]),
-    ]);
-    media.appendChild(meta);
-  } else {
-    media.classList.add(`${className}--plain`);
-  }
-
   if (!imageLinks.length) {
-    media.classList.add("is-empty");
     return media;
   }
 
@@ -329,255 +283,8 @@ function createExperienceMedia(item, className, options = {}) {
   return media;
 }
 
-function getExperienceMediaLabel(lang) {
-  return lang === "vi" ? "Nền tảng / Stack" : "Platform / Stack";
-}
-
 function getDetailsWorkItems(content) {
   return content.details_work?.items ?? content.more_work?.items ?? [];
-}
-
-function normalizeDetailPreviewLines(value) {
-  if (Array.isArray(value)) {
-    return value
-      .flatMap((line) => String(line ?? "").split(/\r?\n/g))
-      .map((line) => line.trim())
-      .filter(Boolean);
-  }
-
-  if (typeof value === "string") {
-    return value
-      .split(/\r?\n/g)
-      .map((line) => line.trim())
-      .filter(Boolean);
-  }
-
-  return [];
-}
-
-function splitLabeledPreview(line) {
-  const safeLine = String(line ?? "").trim();
-  const match = safeLine.match(/^([^:]+):\s*(.+)$/);
-  if (!match) {
-    return { label: "", text: safeLine };
-  }
-  return {
-    label: match[1].trim(),
-    text: match[2].trim(),
-  };
-}
-
-function buildTimelinePreview(item, work, lang) {
-  const fallbackLines = normalizeDescLines(item?.desc).map((line) => splitLabeledPreview(line));
-
-  if (!work?.desc || typeof work.desc !== "object" || Array.isArray(work.desc)) {
-    const project = work?.name?.trim() || "";
-    const highlight = fallbackLines[0]?.text || project || "";
-    return {
-      project,
-      highlight,
-      highlightKind: "",
-      bullets: fallbackLines.slice(highlight ? 1 : 0, 3),
-    };
-  }
-
-  const labels = lang === "vi"
-    ? {
-        goal: "Mục tiêu",
-        result: "Kết quả",
-        tech: "Tech",
-      }
-    : {
-        goal: "Goal",
-        result: "Result",
-        tech: "Tech",
-      };
-
-  const goal = normalizeDetailPreviewLines(work.desc.goal);
-  const result = normalizeDetailPreviewLines(work.desc.result ?? work.desc.ressult);
-  const tech = normalizeDetailPreviewLines(work.desc.tech);
-  const project = work.name?.trim() || "";
-  const highlight = result[0] || goal[0] || project || fallbackLines[0]?.text || "";
-  const highlightKind = result[0]
-    ? "result"
-    : goal[0]
-      ? "goal"
-      : project
-        ? "project"
-        : "";
-
-  const bullets = [];
-  if (goal[0] && goal[0] !== highlight) {
-    bullets.push({ kind: "goal", label: labels.goal, text: goal[0] });
-  }
-  if (result[0] && result[0] !== highlight) {
-    bullets.push({ kind: "result", label: labels.result, text: result[0] });
-  }
-  if (tech.length) {
-    bullets.push({ kind: "tech", label: labels.tech, text: tech.join(" • ") });
-  }
-
-  return {
-    project,
-    highlight,
-    highlightKind,
-    bullets: bullets.slice(0, 2),
-  };
-}
-
-function splitExperienceDateLocation(rawValue) {
-  const safeValue = String(rawValue ?? "").trim();
-  if (!safeValue) {
-    return { date: "", location: "" };
-  }
-
-  const [datePart, ...locationParts] = safeValue.split(",").map((part) => part.trim()).filter(Boolean);
-  return {
-    date: datePart ?? safeValue,
-    location: locationParts.join(", "),
-  };
-}
-
-function resolveExperienceStageClass(index, total) {
-  if (index === total - 1) {
-    return "experience-timeline__item--current";
-  }
-  if (index === 0) {
-    return "experience-timeline__item--origin";
-  }
-  return "experience-timeline__item--build";
-}
-
-function normalizeSkillTags(value) {
-  return String(value ?? "")
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean)
-    .slice(0, 6);
-}
-
-function resolveSkillMeta(rawKey, lang, index = 0) {
-  const key = normalizeKeyForMatch(rawKey);
-  const catalog = [
-    {
-      match: /ngon ngu|languages?/i,
-      badge: "LG",
-      level: 92,
-      summary: {
-        vi: "Ngôn ngữ chính dùng để xây backend, công cụ desktop và script vận hành.",
-        en: "Core languages used for backend services, desktop tools, and ops scripts.",
-      },
-    },
-    {
-      match: /frontend/i,
-      badge: "FE",
-      level: 84,
-      summary: {
-        vi: "UI logic, dashboard flow và front-end implementation theo hướng gọn, ít phụ thuộc framework.",
-        en: "UI implementation, dashboard flows, and framework-light frontend delivery.",
-      },
-    },
-    {
-      match: /backend/i,
-      badge: "BE",
-      level: 93,
-      summary: {
-        vi: "API, auth, xử lý dữ liệu và kết nối nhiều thành phần trong hệ thống.",
-        en: "API design, auth, data handling, and service-to-service integration.",
-      },
-    },
-    {
-      match: /co so du lieu|database/i,
-      badge: "DB",
-      level: 87,
-      summary: {
-        vi: "Thiết kế dữ liệu, truy vấn và lựa chọn storage phù hợp với bài toán vận hành thực tế.",
-        en: "Schema design, querying, and practical storage decisions for live systems.",
-      },
-    },
-    {
-      match: /he thong|systems?/i,
-      badge: "OS",
-      level: 88,
-      summary: {
-        vi: "Server, shell tooling và môi trường triển khai tự chủ cho các hệ thống vận hành thực tế.",
-        en: "Server setup, shell tooling, and self-managed deployment environments.",
-      },
-    },
-    {
-      match: /van hanh|operations?/i,
-      badge: "OP",
-      level: 90,
-      summary: {
-        vi: "Backup, failover, monitoring và workflow giúp hệ thống chạy ổn định hằng ngày.",
-        en: "Backup, failover, monitoring, and workflows that keep systems stable.",
-      },
-    },
-  ];
-
-  const found = catalog.find((entry) => entry.match.test(key));
-  if (found) {
-    return found;
-  }
-
-  const fallbackBadges = ["ST", "PX", "SY", "DV"];
-  return {
-    badge: fallbackBadges[index % fallbackBadges.length],
-    level: 80,
-    summary: {
-      vi: "Nhóm kỹ năng hỗ trợ triển khai và thích ứng nhanh theo từng bài toán cụ thể.",
-      en: "Supporting skills used pragmatically based on product and system needs.",
-    },
-  };
-}
-
-function normalizeKeyForMatch(rawKey) {
-  return String(rawKey ?? "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
-function isPrioritySkill(rawKey) {
-  const key = normalizeKeyForMatch(rawKey);
-  return /backend|he thong|systems?|van hanh|operations?/.test(key);
-}
-
-function resolveSkillVariantClass(rawKey) {
-  const key = normalizeKeyForMatch(rawKey);
-  if (/backend/.test(key)) {
-    return "skill-group--backend";
-  }
-  if (/he thong|systems?/.test(key)) {
-    return "skill-group--systems";
-  }
-  if (/van hanh|operations?/.test(key)) {
-    return "skill-group--operations";
-  }
-  return "";
-}
-
-function getSkillOrderScore(rawKey) {
-  const key = normalizeKeyForMatch(rawKey);
-  if (/backend/.test(key)) {
-    return 0;
-  }
-  if (/he thong|systems?/.test(key)) {
-    return 1;
-  }
-  if (/van hanh|operations?/.test(key)) {
-    return 2;
-  }
-  if (/ngon ngu|languages?/.test(key)) {
-    return 3;
-  }
-  if (/frontend/.test(key)) {
-    return 4;
-  }
-  if (/co so du lieu|database|databases/.test(key)) {
-    return 5;
-  }
-  return 99;
 }
 
 function createSkeleton() {
@@ -595,11 +302,13 @@ function createSkeleton() {
 }
 
 function createNavbarContent(state) {
-  const { lang, playMode } = state;
+  const { lang, playMode, theme } = state;
   const root = el("div", "navbar__card");
   const inner = el("div", "navbar__inner", { role: "navigation", "aria-label": "Main navigation" });
   const nextLang = lang === "vi" ? "en" : "vi";
+  const nextTheme = theme === "light" ? "dark" : "light";
   const langLabel = lang === "vi" ? "VI" : "EN";
+  const themeIcon = theme === "light" ? createSunIcon() : createMoonIcon();
 
   const right = el("div", "navbar__right");
   right.appendChild(
@@ -620,12 +329,27 @@ function createNavbarContent(state) {
   right.appendChild(
     el(
       "button",
+      `navbar__control-btn navbar__control-btn--theme${theme === "light" ? " is-light" : " is-dark"}`,
+      {
+        type: "button",
+        dataset: { themeToggle: "true", themeNext: nextTheme },
+        "aria-label": theme === "light" ? "Switch to dark mode" : "Switch to light mode",
+      },
+      [
+        themeIcon,
+        el("span", "u-sr-only", {}, [theme === "light" ? "Dark mode" : "Light mode"]),
+      ],
+    ),
+  );
+  right.appendChild(
+    el(
+      "button",
       `navbar__control-btn navbar__control-btn--hide${playMode ? " is-active" : ""}`,
       {
         type: "button",
         dataset: { playMode: "toggle" },
         "aria-pressed": playMode ? "true" : "false",
-        "aria-label": lang === "vi" ? "Bật hoặc tắt Hide UI" : "Toggle Hide UI",
+        "aria-label": lang === "vi" ? "Bat tat Hide UI" : "Toggle Hide UI",
       },
       ["Hide UI"],
     ),
@@ -641,7 +365,7 @@ function createPlayModeScreen(state) {
   const lang = state.lang;
   const controls = el("div", "play-mode-screen__controls", {
     role: "group",
-    "aria-label": lang === "vi" ? "Điều khiển màu fluid" : "Fluid color controls",
+    "aria-label": lang === "vi" ? "Dieu khien mau fluid" : "Fluid color controls",
   }, [
     el(
       "button",
@@ -649,9 +373,9 @@ function createPlayModeScreen(state) {
       {
         type: "button",
         dataset: { fluidPlay: "random" },
-        "aria-label": lang === "vi" ? "Màu ngẫu nhiên" : "Random color",
+        "aria-label": lang === "vi" ? "Mau ngau nhien" : "Random color",
       },
-      [lang === "vi" ? "Màu ngẫu nhiên" : "Random Color"],
+      [lang === "vi" ? "Mau ngau nhien" : "Random Color"],
     ),
     el(
       "button",
@@ -659,9 +383,9 @@ function createPlayModeScreen(state) {
       {
         type: "button",
         dataset: { fluidPlay: "default" },
-        "aria-label": lang === "vi" ? "Mặc định" : "Back to default",
+        "aria-label": lang === "vi" ? "Mac dinh" : "Back to default",
       },
-      [lang === "vi" ? "Mặc định" : "Default"],
+      [lang === "vi" ? "Mac dinh" : "Default"],
     ),
   ]);
   return el("section", "play-mode-screen reveal reveal--section", { id: "top", "aria-label": "Play mode" }, [
@@ -677,52 +401,45 @@ function createHeroCard(state, content) {
   const displayName = activeName(content, lang);
   const heroBadge = typeof hero.badge === "string" ? hero.badge.trim() : "";
   const emailHref = meta.email ? `mailto:${meta.email}` : "";
+  const linkedinHref = safeHref(meta.links?.linkedin || "");
 
-  const card = el("article", "card hero hero--spotlight rolling-panel reveal", { "aria-labelledby": "hero-title" });
-  const layout = el("div", "hero__layout");
-  const intro = el("div", "hero__intro");
-
+  const card = el("article", "card hero rolling-panel reveal", { "aria-labelledby": "hero-title" });
   if (heroBadge) {
-    intro.appendChild(el("span", "hero__badge", {}, [heroBadge]));
+    card.appendChild(el("span", "hero__badge", {}, [heroBadge]));
   }
-
-  intro.appendChild(
-    el("div", "hero__titles", {}, [
-      createRollingTitle(displayName, "hero-title", "h1"),
-      el("p", "hero__role-line", {}, [deriveHeroRoleLine(content, lang)]),
+  card.appendChild(
+    el("div", "hero__head", {}, [
+      el("div", "hero__titles", {}, [
+        createRollingTitle(displayName, "hero-title", "h1"),
+        el("p", "hero__subtitle", {}, [meta.title ?? "Software Engineer / Full-stack Developer"]),
+      ]),
+      createHeroAvatar(meta, displayName, lang),
     ]),
   );
 
   if (hero.tagline) {
-    intro.appendChild(
-      el("div", "hero__message", {}, [
-        el("p", "hero__tagline hero__tagline--lead", {}, [hero.tagline]),
-      ]),
-    );
+    card.appendChild(el("p", "hero__tagline u-line-clamp-2", {}, [hero.tagline]));
   }
 
   const about = el("div", "hero__about");
-  (hero.about_paragraphs ?? []).slice(0, 3).forEach((paragraph, index) => {
-    about.appendChild(el("p", `hero__about-copy${index === 0 ? " hero__about-copy--primary" : ""}`, {}, [paragraph]));
+  (hero.about_paragraphs ?? []).slice(0, 2).forEach((paragraph) => {
+    about.appendChild(el("p", "u-line-clamp-3", {}, [paragraph]));
   });
-  intro.appendChild(about);
+  card.appendChild(about);
 
   const cta = el("div", "hero__cta");
   cta.appendChild(
-      createActionButton({
-      label: lang === "vi" ? "Liên hệ qua email" : "Contact via Email",
-      href: emailHref || "#top",
+    createActionButton({
+      label: lang === "vi" ? "Lien he" : "Contact",
+      href: emailHref || linkedinHref || "#top",
       kind: "primary",
     }),
   );
   const cvHref = safeHref(meta.links?.cv || "");
   if (state.cvAvailable && cvHref) {
-    cta.appendChild(createActionButton({ label: lang === "vi" ? "Tải CV" : "Download CV", href: cvHref, kind: "secondary" }));
+    cta.appendChild(createActionButton({ label: lang === "vi" ? "Tai CV" : "Download CV", href: cvHref }));
   }
-  intro.appendChild(cta);
-
-  layout.append(intro, createHeroProfilePanel(content, lang, displayName));
-  card.appendChild(layout);
+  card.appendChild(cta);
   return card;
 }
 
@@ -754,13 +471,10 @@ function createExperienceSection(content, lang) {
       "aria-haspopup": "dialog",
       "aria-label":
         lang === "vi"
-          ? `Mở chi tiết công việc liên quan: ${item.role ?? "Kinh nghiệm"}`
+          ? `Mở chi tiết work liên quan: ${item.role ?? "Kinh nghiệm"}`
           : `Open related work details: ${item.role ?? "Experience"}`,
     } : {}, [
-      createExperienceMedia(item, "experience-tile__media", {
-        lang,
-        showMeta: false,
-      }),
+      createExperienceMedia(item, "experience-tile__media"),
       body,
     ]);
     list.appendChild(node);
@@ -770,157 +484,114 @@ function createExperienceSection(content, lang) {
   return section;
 }
 
-function createExperienceTimelineSection(content, lang) {
+function createExperienceCarouselSection(content, lang, theme = "dark") {
   const experience = content.experience ?? {};
   const experienceItems = experience.items ?? [];
   const works = getDetailsWorkItems(content);
   if (!experienceItems.length) {
     return null;
   }
-
+  const carouselItems = experienceItems.slice(0, 3);
   const rawSectionTitle = typeof experience.title === "string" ? experience.title.trim() : "";
-  const sectionTitle = rawSectionTitle || (lang === "vi" ? "Kinh nghiệm" : "Experience");
-  const sectionSubtitle = lang === "vi"
-    ? "Timeline tập trung vào vai trò, bối cảnh dự án và kết quả chính."
-    : "A concise timeline focused on role, project context, and key outcomes.";
+  const sectionTitle = rawSectionTitle || (lang === "vi" ? "Kinh nghiem" : "Experience");
 
   const section = el("section", "section reveal reveal--section", { id: "experience" });
-  const card = el("article", "card list-card experience-timeline-panel rolling-panel reveal", { "aria-labelledby": "experience-timeline-title" });
-  const head = el("div", "list-card__head", {}, [
-    createRollingTitle(sectionTitle, "experience-timeline-title"),
-    el("p", "list-card__subtitle experience-timeline-panel__subtitle", {}, [sectionSubtitle]),
-  ]);
-  card.appendChild(head);
+  const card = el("article", "card list-card experience-carousel-panel rolling-panel reveal", { "aria-labelledby": "experience-carousel-title" });
+  card.appendChild(createRollingTitle(sectionTitle, "experience-carousel-title"));
 
-  const timeline = el("ol", "experience-timeline");
-  experienceItems.slice(0, 4).forEach((item, index) => {
-    const role = splitRoleParts(item.role);
-    const work = works[index];
-    const preview = buildTimelinePreview(item, work, lang);
-    const dateMeta = splitExperienceDateLocation(item.date);
-    const hasWork = Boolean(work);
-    const stageClass = resolveExperienceStageClass(index, Math.min(experienceItems.length, 4));
-    const media = createExperienceMedia(item, "experience-tile__media", {
-      lang,
-      showMeta: false,
-    });
-    media.classList.add("experience-timeline__media");
+  const stage = el("div", "exp-carousel-stage", { id: "experience-carousel-stage" });
+  const swiper = el("div", "swiper exp-carousel", { id: "experience-carousel-swiper" });
+  const wrapper = el("div", "swiper-wrapper");
 
-    const bulletList = el("ul", "experience-timeline__bullets");
-    if (preview.highlight && preview.highlightKind && preview.highlightKind !== "project") {
-      bulletList.appendChild(
-        el("li", `experience-timeline__bullet experience-timeline__bullet--${preview.highlightKind}`, {}, [
-          el("span", "experience-timeline__bullet-label", {}, [preview.highlightKind === "result"
-            ? (lang === "vi" ? "Kết quả" : "Result")
-            : (lang === "vi" ? "Mục tiêu" : "Goal")]),
-          el("span", "experience-timeline__bullet-text", {}, [preview.highlight]),
-        ]),
-      );
-    }
-    preview.bullets.slice(0, 2).forEach((bullet) => {
-      const bulletRow = el("li", `experience-timeline__bullet${bullet.kind ? ` experience-timeline__bullet--${bullet.kind}` : ""}`, {}, [
-        bullet.label ? el("span", "experience-timeline__bullet-label", {}, [bullet.label]) : null,
-        el("span", "experience-timeline__bullet-text", {}, [bullet.text]),
-      ].filter(Boolean));
-      bulletList.appendChild(bulletRow);
-    });
+  const palette = theme === "light"
+    ? [
+      ["#f8fbff", "#edf4ff"],
+      ["#f7fbff", "#e9f1ff"],
+      ["#fbfdff", "#f0f5ff"],
+      ["#f6fbff", "#eaf2ff"],
+      ["#f9fcff", "#eef3ff"],
+    ]
+    : [
+      ["#05070c", "#070b16"],
+      ["#05070c", "#08121f"],
+      ["#05070c", "#0a1525"],
+      ["#05070c", "#091321"],
+      ["#05070c", "#0b1729"],
+    ];
 
-    const body = el("div", "experience-timeline__body", {}, [
-      el("div", "experience-timeline__eyebrow", {}, [work?.meta ?? item.date ?? ""]),
-      el("h3", "experience-timeline__role", {}, [role.title || sectionTitle]),
-      role.company ? el("p", "experience-timeline__company", {}, [role.company]) : null,
-      preview.project && preview.project !== preview.highlight ? el("p", "experience-timeline__project", {}, [preview.project]) : null,
-      bulletList.childElementCount ? bulletList : null,
-      hasWork
-        ? el("span", "experience-timeline__hint", {}, [lang === "vi" ? "Nhấn để mở chi tiết" : "Click for full case details"])
-        : null,
-    ].filter(Boolean));
-
-    const timelineCardAttrs = hasWork
-      ? {
-          role: "button",
-          tabindex: "0",
-          "aria-haspopup": "dialog",
-          "aria-label":
-            lang === "vi"
-              ? `Mở chi tiết: ${role.title || "Kinh nghiệm"}`
-              : `Open details: ${role.title || "Experience"}`,
-          dataset: {
-            workOpen: String(index),
-            motionStyle: "shared",
-          },
-        }
-      : {};
-
-    const stageCardClass = stageClass.replace("experience-timeline__item--", "experience-timeline__card--");
-    const timelineCard = el("article", `experience-timeline__card ${stageCardClass}${hasWork ? " is-clickable" : ""}`, timelineCardAttrs, [
-      media,
-      body,
+  carouselItems.forEach((item, index) => {
+    const colors = palette[index % palette.length];
+    const hasWork = Boolean(works[index]);
+    const descLines = normalizeDescLines(item.desc);
+    const roleText = normalizeRoleText(item.role) || sectionTitle;
+    const body = el("div", "exp-carousel__body", {}, [
+      el("h3", "exp-carousel__title", {}, [roleText]),
+      el("p", "exp-carousel__meta", {}, [item.date ?? ""]),
+      descLines.length
+        ? createDescList(descLines, "exp-carousel__desc-list", "exp-carousel__desc")
+        : el("p", "exp-carousel__desc", {}, [item.desc ?? ""]),
     ]);
-
-    timeline.appendChild(
-      el("li", `experience-timeline__item ${stageClass}`, {}, [
-        el("div", "experience-timeline__date", {}, [
-          el("span", "experience-timeline__date-main", {}, [dateMeta.date || item.date || ""]),
-          dateMeta.location ? el("span", "experience-timeline__date-sub", {}, [dateMeta.location]) : null,
-        ].filter(Boolean)),
-        el("div", "experience-timeline__rail", { "aria-hidden": "true" }, [
-          el("span", "experience-timeline__dot"),
-          el("span", "experience-timeline__line"),
-        ]),
-        timelineCard,
-      ]),
+    const slide = el(
+      "div",
+      "swiper-slide exp-carousel__slide",
+      {
+        dataset: { bg: `${colors[0]}, ${colors[1]}` },
+      },
+      [
+        el(
+          "article",
+          "exp-carousel__card",
+          hasWork
+            ? {
+                role: "button",
+                tabindex: "0",
+                "aria-haspopup": "dialog",
+                "aria-label":
+                  lang === "vi"
+                    ? `Mo chi tiet: ${item.role ?? "Kinh nghiem"}`
+                    : `Open details: ${item.role ?? "Experience"}`,
+                dataset: {
+                  workOpen: String(index),
+                  motionStyle: "zoom",
+                },
+              }
+            : {},
+          [
+            createExperienceMedia(item, "exp-carousel__media"),
+            body,
+          ],
+        ),
+      ],
     );
+    wrapper.appendChild(slide);
   });
 
-  card.appendChild(timeline);
+  swiper.appendChild(wrapper);
+  stage.appendChild(swiper);
+  stage.appendChild(el("div", "swiper-button-prev exp-carousel-prev", { "aria-label": "Previous slide" }));
+  stage.appendChild(el("div", "swiper-button-next exp-carousel-next", { "aria-label": "Next slide" }));
+  stage.appendChild(el("div", "swiper-pagination exp-carousel-pagination"));
+
+  card.appendChild(stage);
   section.appendChild(card);
   return section;
 }
 
-function createSkillsSection(content, lang) {
+function createSkillsSection(content) {
   const skills = content.skills ?? {};
   const section = el("section", "section reveal reveal--section", { id: "skills" });
-  const card = el("article", "card list-card skills-system-panel rolling-panel reveal", { "aria-labelledby": "skills-title" });
-  const subtitle =
-    lang === "vi"
-      ? "Nhóm kỹ năng được trình bày theo chiều sâu và phạm vi triển khai."
-      : "Capabilities grouped by depth, usage, and system responsibility.";
+  const card = el("article", "card list-card rolling-panel reveal", { "aria-labelledby": "skills-title" });
+  card.appendChild(createRollingTitle(skills.title ?? "Skills", "skills-title"));
 
-  card.appendChild(
-    el("div", "list-card__head", {}, [
-      createRollingTitle(skills.title ?? "Skills", "skills-title"),
-      el("p", "list-card__subtitle skills-system-panel__subtitle", {}, [subtitle]),
-    ]),
-  );
-
-  const list = el("div", "skills-system");
-  const orderedSkills = [...(skills.items ?? [])].slice(0, 6);
-
-  orderedSkills.forEach((item, index) => {
-    const meta = resolveSkillMeta(item.key, lang, index);
-    const tags = normalizeSkillTags(item.value).slice(0, 4);
-    const group = el("article", "skill-group card--inner rolling-panel reveal");
-    const tagRow = el("div", "skill-group__tags");
-    tags.forEach((tag) => {
-      tagRow.appendChild(el("span", "skill-group__tag", {}, [tag]));
-    });
-
-    const headingNodes = [
-      el("h3", "skill-group__title", {}, [item.key ?? ""]),
-      el("p", "skill-group__summary", {}, [meta.summary[lang] ?? meta.summary.en]),
-    ];
-
-    group.append(
-      el("div", "skill-group__head", {}, [
-        el("div", "skill-group__heading", {}, headingNodes),
+  const list = el("ul", "skills-vertical-grid");
+  (skills.items ?? []).slice(0, 8).forEach((item) => {
+    list.appendChild(
+      el("li", "skill-tile", {}, [
+        el("strong", "skill-tile__key", {}, [item.key ?? ""]),
+        el("p", "skill-tile__value", {}, [item.value ?? ""]),
       ]),
-      tagRow,
     );
-
-    list.appendChild(group);
   });
-
   card.appendChild(list);
   section.appendChild(card);
   return section;
@@ -930,6 +601,7 @@ function createFloatingContactMenu(content, state) {
   const lang = state.lang;
   const meta = content.meta ?? {};
   const emailHref = meta.email ? `mailto:${meta.email}` : "";
+  const linkedinHref = safeHref(meta.links?.linkedin || "");
   const cvHref = safeHref(meta.links?.cv || "");
 
   const root = el("div", "contact-fab", { id: "contact-fab" });
@@ -949,10 +621,24 @@ function createFloatingContactMenu(content, state) {
     );
   }
 
+  if (linkedinHref) {
+    actions.appendChild(
+      createCircleAction({
+        label: "LinkedIn",
+        href: linkedinHref,
+        className: "contact-fab__action--linkedin",
+        tip: "LinkedIn",
+        iconSvg: el("svg", "contact-fab__icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
+          el("path", "", { d: "M6.4 8.5a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2ZM4.7 10h3.3v9.7H4.7V10Zm5 0H13v1.4h.1c.5-.9 1.7-1.7 3.4-1.7 3 0 3.5 2 3.5 4.5v5.5h-3.3v-4.9c0-1.2 0-2.7-1.7-2.7-1.7 0-2 1.3-2 2.6v5h-3.3V10Z" }),
+        ]),
+      }),
+    );
+  }
+
   if (state.cvAvailable && cvHref) {
     actions.appendChild(
       createCircleAction({
-        label: lang === "vi" ? "Tải CV" : "Download CV",
+        label: lang === "vi" ? "Tai CV" : "Download CV",
         href: cvHref,
         className: "contact-fab__action--cv",
         tip: "CV",
@@ -971,7 +657,7 @@ function createFloatingContactMenu(content, state) {
   root.appendChild(
     el("button", "contact-fab__trigger", {
       type: "button",
-      "aria-label": lang === "vi" ? "Mở menu liên hệ" : "Open contact menu",
+      "aria-label": lang === "vi" ? "Mo menu lien he" : "Open contact menu",
       "aria-controls": "contact-fab-actions",
       "aria-expanded": "false",
       dataset: { contactFabToggle: "true" },
@@ -993,7 +679,7 @@ function createSiteFooter(content) {
 }
 
 function createWorkPopup() {
-  const panel = el("div", "work-popup__panel", {}, [
+  const panel = el("div", "work-popup__panel", { role: "dialog", "aria-modal": "true", "aria-labelledby": "work-popup-title" }, [
     el("h3", "work-popup__title", { id: "work-popup-title" }, [""]),
     el("ul", "item__desc-list work-popup__desc-list", { id: "work-popup-desc" }, []),
     el("p", "item__meta work-popup__meta", { id: "work-popup-meta" }, [""]),
@@ -1004,7 +690,7 @@ function createWorkPopup() {
     panel,
   ]);
 
-  return el("dialog", "work-popup", { id: "work-popup", "aria-hidden": "true", "aria-labelledby": "work-popup-title" }, [
+  return el("div", "work-popup u-hidden", { id: "work-popup", "aria-hidden": "true" }, [
     el("div", "work-popup__backdrop", { dataset: { workClose: "true" } }),
     frame,
   ]);
@@ -1031,11 +717,11 @@ export function renderApp(state) {
     fragment.appendChild(createPlayModeScreen(state));
   } else {
     fragment.appendChild(el("section", "section topband topband--single reveal reveal--section", { id: "top" }, [createHeroCard(state, state.content)]));
-    const experienceTimeline = createExperienceTimelineSection(state.content, state.lang);
-    if (experienceTimeline) {
-      fragment.appendChild(experienceTimeline);
+    const experienceCarousel = createExperienceCarouselSection(state.content, state.lang, state.theme);
+    if (experienceCarousel) {
+      fragment.appendChild(experienceCarousel);
     }
-    fragment.appendChild(createSkillsSection(state.content, state.lang));
+    fragment.appendChild(createSkillsSection(state.content));
     const contactFab = createFloatingContactMenu(state.content, state);
     if (contactFab) {
       fragment.appendChild(contactFab);

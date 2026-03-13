@@ -4,7 +4,9 @@ import {
   randomizeFluidPlayModeColor,
   resetFluidPlayModeColor,
   setFluidPlayMode,
+  setFluidTheme,
 } from "./src/lib/fluidBackground.js";
+import { initExperienceCarousel } from "./src/lib/experienceCarousel.js";
 import { initBubblePhysics } from "./src/lib/bubblePhysics.js";
 import { initReveal } from "./src/lib/motion.js";
 import { initActiveSectionObserver } from "./src/lib/navActive.js";
@@ -24,7 +26,7 @@ let stateSnapshot = getState();
 let languageRequestSeq = 0;
 let navIndicatorController = null;
 let popupLastFocused = null;
-let popupSurfaceAnimation = null;
+let popupPanelAnimation = null;
 let popupBackdropAnimation = null;
 let popupGhostAnimation = null;
 let popupGhostEl = null;
@@ -37,22 +39,19 @@ let loaderFallbackTimer = 0;
 let loaderBootReady = false;
 let loaderAnimationDone = false;
 let loaderAnimationTimer = 0;
-let fluidLazyInitBound = false;
 
-const POPUP_OPEN_BACKDROP_DURATION = 180;
-const POPUP_OPEN_SURFACE_DURATION = 260;
-const POPUP_OPEN_SURFACE_DELAY = 35;
-const POPUP_CLOSE_BACKDROP_DURATION = 150;
-const POPUP_CLOSE_SURFACE_DURATION = 180;
-const POPUP_IN_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
-const POPUP_OUT_EASING = "cubic-bezier(0.4, 0, 1, 1)";
+const POPUP_OPEN_BACKDROP_DURATION = 200;
+const POPUP_OPEN_PANEL_DURATION = 280;
+const POPUP_OPEN_PANEL_DELAY = 45;
+const POPUP_CLOSE_BACKDROP_DURATION = 160;
+const POPUP_CLOSE_PANEL_DURATION = 200;
+const POPUP_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
 const POPUP_REDUCED_DURATION = 140;
-const POPUP_SHARED_OPEN_DURATION = 360;
-const POPUP_SHARED_CLOSE_DURATION = 300;
-const POPUP_SHARED_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
-const POPUP_SHARED_SURFACE_DURATION = 220;
-const POPUP_SHARED_SURFACE_DELAY = 45;
+const POPUP_SHARED_OPEN_DURATION = 450;
+const POPUP_SHARED_CLOSE_DURATION = 420;
+const POPUP_SHARED_EASING = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const POPUP_SHARED_FADE_DURATION = 160;
+const POPUP_SHARED_GHOST_FADE_DURATION = 120;
 const POPUP_SHARED_OVERLAY_DURATION = 180;
 
 function isMobileViewport() {
@@ -125,32 +124,12 @@ function setScrollBehavior(reducedMotion) {
   document.documentElement.style.scrollBehavior = reducedMotion ? "auto" : "smooth";
 }
 
-function bindLazyFluidInit() {
-  if (fluidLazyInitBound) {
-    return;
-  }
-
-  const triggerInit = () => {
-    initFluidBackground().then((ready) => {
-      if (!ready) {
-        return;
-      }
-      window.removeEventListener("pointermove", triggerInit);
-      window.removeEventListener("pointerdown", triggerInit);
-      window.removeEventListener("keydown", triggerInit);
-      fluidLazyInitBound = false;
-    }).catch(() => {
-      window.removeEventListener("pointermove", triggerInit);
-      window.removeEventListener("pointerdown", triggerInit);
-      window.removeEventListener("keydown", triggerInit);
-      fluidLazyInitBound = false;
-    });
-  };
-
-  fluidLazyInitBound = true;
-  window.addEventListener("pointermove", triggerInit, { passive: true });
-  window.addEventListener("pointerdown", triggerInit, { passive: true });
-  window.addEventListener("keydown", triggerInit, { passive: true });
+function applyTheme(theme) {
+  const nextTheme = theme === "light" ? "light" : "dark";
+  const root = document.documentElement;
+  root.classList.toggle("theme-light", nextTheme === "light");
+  root.classList.toggle("theme-dark", nextTheme === "dark");
+  root.setAttribute("data-theme", nextTheme);
 }
 
 function initNavIndicator() {
@@ -334,17 +313,7 @@ function forceViewportTop() {
 
 function isWorkPopupOpen() {
   const popup = document.getElementById("work-popup");
-  return isPopupVisible(popup);
-}
-
-function isPopupVisible(popup) {
-  if (!(popup instanceof HTMLElement)) {
-    return false;
-  }
-  if (popup instanceof HTMLDialogElement) {
-    return popup.open;
-  }
-  return !popup.classList.contains("u-hidden");
+  return Boolean(popup && !popup.classList.contains("u-hidden"));
 }
 
 function syncGlobalScrollLock() {
@@ -436,36 +405,28 @@ function createGhostFromElement(sourceEl, rect, extraClass = "") {
   return ghost;
 }
 
-function clearPopupSurfaceInlineStyles() {
-  const frame = document.querySelector("#work-popup .work-popup__frame");
-  if (frame instanceof HTMLElement) {
-    frame.style.opacity = "";
-    frame.style.transform = "";
+function clearPopupPanelInlineStyles() {
+  const panel = document.querySelector("#work-popup .work-popup__panel");
+  if (panel instanceof HTMLElement) {
+    panel.style.opacity = "";
+    panel.style.transform = "";
   }
 }
 
-function cancelPopupAnimations({ restoreSource = true } = {}) {
-  popupSurfaceAnimation?.cancel();
+function cancelPopupAnimations() {
+  popupPanelAnimation?.cancel();
   popupBackdropAnimation?.cancel();
   popupGhostAnimation?.cancel();
-  popupSurfaceAnimation = null;
+  popupPanelAnimation = null;
   popupBackdropAnimation = null;
   popupGhostAnimation = null;
-  clearPopupSurfaceInlineStyles();
+  clearPopupPanelInlineStyles();
   removePopupGhost();
-  if (restoreSource) {
-    restorePopupSourceVisibility();
-  }
+  restorePopupSourceVisibility();
 }
 
 function finishWorkPopupClose(popup) {
-  if (popup instanceof HTMLDialogElement) {
-    if (popup.open) {
-      popup.close();
-    }
-  } else {
-    popup.classList.add("u-hidden");
-  }
+  popup.classList.add("u-hidden");
   popup.setAttribute("aria-hidden", "true");
   syncGlobalScrollLock();
 
@@ -482,22 +443,22 @@ function finishWorkPopupClose(popup) {
 
 function closeWorkPopup() {
   const popup = document.getElementById("work-popup");
-  if (!popup || !isPopupVisible(popup)) {
+  if (!popup || popup.classList.contains("u-hidden")) {
     return;
   }
 
-  const frame = popup.querySelector(".work-popup__frame");
+  popup.setAttribute("aria-hidden", "true");
+
   const panel = popup.querySelector(".work-popup__panel");
   const backdrop = popup.querySelector(".work-popup__backdrop");
   const reducedMotion = getState().reducedMotion;
   const canAnimate =
-    frame instanceof HTMLElement &&
     panel instanceof HTMLElement &&
     backdrop instanceof HTMLElement &&
-    typeof frame.animate === "function" &&
+    typeof panel.animate === "function" &&
     typeof backdrop.animate === "function";
 
-  cancelPopupAnimations({ restoreSource: false });
+  cancelPopupAnimations();
 
   if (!canAnimate) {
     finishWorkPopupClose(popup);
@@ -519,6 +480,7 @@ function closeWorkPopup() {
       popupGhostEl = ghost;
       document.body.appendChild(ghost);
 
+      panel.style.opacity = "0";
       ghost.style.setProperty("--shadowOpacity", "1");
       requestAnimationFrame(() => {
         ghost.style.setProperty("--shadowOpacity", "0");
@@ -546,7 +508,7 @@ function closeWorkPopup() {
         ],
         {
           duration: POPUP_SHARED_CLOSE_DURATION,
-          easing: POPUP_OUT_EASING,
+          easing: POPUP_SHARED_EASING,
           fill: "forwards",
         },
       );
@@ -560,30 +522,14 @@ function closeWorkPopup() {
         },
       );
 
-      popupSurfaceAnimation = frame.animate(
-        [
-          { opacity: 1, transform: "translate3d(0, 0, 0) scale(1)" },
-          { opacity: 0, transform: "translate3d(0, 8px, 0) scale(0.985)" },
-        ],
-        {
-          duration: POPUP_SHARED_FADE_DURATION,
-          easing: POPUP_OUT_EASING,
-          fill: "both",
-        },
-      );
-
-      Promise.allSettled([
-        popupSurfaceAnimation.finished,
-        popupGhostAnimation.finished,
-        popupBackdropAnimation.finished,
-      ]).then(() => {
+      Promise.allSettled([popupGhostAnimation.finished, popupBackdropAnimation.finished]).then(() => {
         if (motionToken !== popupMotionToken) {
           return;
         }
-        popupSurfaceAnimation = null;
+        popupPanelAnimation = null;
         popupBackdropAnimation = null;
         popupGhostAnimation = null;
-        clearPopupSurfaceInlineStyles();
+        clearPopupPanelInlineStyles();
         removePopupGhost();
         finishWorkPopupClose(popup);
       });
@@ -592,7 +538,7 @@ function closeWorkPopup() {
   }
 
   if (reducedMotion) {
-    popupSurfaceAnimation = frame.animate(
+    popupPanelAnimation = panel.animate(
       [{ opacity: 1 }, { opacity: 0 }],
       {
         duration: POPUP_REDUCED_DURATION,
@@ -610,14 +556,14 @@ function closeWorkPopup() {
       },
     );
   } else {
-    popupSurfaceAnimation = frame.animate(
+    popupPanelAnimation = panel.animate(
       [
         { opacity: 1, transform: "translate3d(0, 0, 0) scale(1)" },
-        { opacity: 0, transform: "translate3d(0, 8px, 0) scale(0.985)" },
+        { opacity: 0, transform: "translate3d(0, 8px, 0) scale(0.97)" },
       ],
       {
-        duration: POPUP_CLOSE_SURFACE_DURATION,
-        easing: POPUP_OUT_EASING,
+        duration: POPUP_CLOSE_PANEL_DURATION,
+        easing: POPUP_EASING,
         fill: "both",
       },
     );
@@ -632,16 +578,13 @@ function closeWorkPopup() {
     );
   }
 
-  Promise.allSettled([
-    popupSurfaceAnimation.finished,
-    popupBackdropAnimation.finished,
-  ]).then(() => {
+  Promise.allSettled([popupPanelAnimation.finished, popupBackdropAnimation.finished]).then(() => {
     if (motionToken !== popupMotionToken) {
       return;
     }
-    popupSurfaceAnimation = null;
+    popupPanelAnimation = null;
     popupBackdropAnimation = null;
-    clearPopupSurfaceInlineStyles();
+    clearPopupPanelInlineStyles();
     finishWorkPopupClose(popup);
   });
 }
@@ -814,7 +757,6 @@ function openWorkPopup(index, triggerEl) {
   const meta = popup.querySelector("#work-popup-meta");
   const desc = popup.querySelector("#work-popup-desc");
   const closeBtn = popup.querySelector("[data-work-close='true']");
-  const frame = popup.querySelector(".work-popup__frame");
   const panel = popup.querySelector(".work-popup__panel");
   const backdrop = popup.querySelector(".work-popup__backdrop");
   const reducedMotion = state.reducedMotion;
@@ -869,30 +811,19 @@ function openWorkPopup(index, triggerEl) {
       ? triggerEl.dataset.motionStyle
       : "zoom";
 
-  if (popup instanceof HTMLDialogElement) {
-    if (!popup.open) {
-      popup.showModal();
-    }
-  } else {
-    popup.classList.remove("u-hidden");
-  }
+  popup.classList.remove("u-hidden");
   popup.setAttribute("aria-hidden", "false");
   syncGlobalScrollLock();
 
   const canAnimate =
-    frame instanceof HTMLElement &&
     panel instanceof HTMLElement &&
     backdrop instanceof HTMLElement &&
-    typeof frame.animate === "function" &&
+    typeof panel.animate === "function" &&
     typeof backdrop.animate === "function";
 
   if (canAnimate) {
     const motionToken = popupMotionToken;
-    const canSharedOpen =
-      !reducedMotion &&
-      popupMotionStyle === "shared" &&
-      popupSourceEl instanceof HTMLElement &&
-      popupSourceEl.isConnected;
+    const canSharedOpen = !reducedMotion && popupMotionStyle === "shared" && popupSourceEl instanceof HTMLElement;
 
     if (canSharedOpen) {
       const sourceRect = getElementRect(popupSourceEl);
@@ -903,8 +834,7 @@ function openWorkPopup(index, triggerEl) {
         document.body.appendChild(ghost);
 
         popupSourceEl.style.visibility = "hidden";
-        frame.style.opacity = "0";
-        frame.style.transform = "translate3d(0, 10px, 0) scale(0.985)";
+        panel.style.opacity = "0";
         ghost.style.setProperty("--shadowOpacity", "0");
         requestAnimationFrame(() => {
           ghost.style.setProperty("--shadowOpacity", "1");
@@ -921,7 +851,7 @@ function openWorkPopup(index, triggerEl) {
           [{ opacity: 0 }, { opacity: 1 }],
           {
             duration: POPUP_SHARED_OVERLAY_DURATION,
-            easing: "ease-out",
+            easing: "linear",
             fill: "both",
           },
         );
@@ -931,18 +861,10 @@ function openWorkPopup(index, triggerEl) {
             {
               transform: "translate3d(0px, 0px, 0) scale(1, 1)",
               borderRadius: sourceStyle.borderRadius,
-              opacity: 1,
-            },
-            {
-              offset: 0.72,
-              transform: `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`,
-              borderRadius: panelStyle.borderRadius,
-              opacity: 1,
             },
             {
               transform: `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`,
               borderRadius: panelStyle.borderRadius,
-              opacity: 0,
             },
           ],
           {
@@ -952,36 +874,40 @@ function openWorkPopup(index, triggerEl) {
           },
         );
 
-        popupSurfaceAnimation = frame.animate(
-          [
-            { opacity: 0, transform: "translate3d(0, 10px, 0) scale(0.985)" },
-            { opacity: 1, transform: "translate3d(0, 0, 0) scale(1)" },
-          ],
-          {
-            duration: POPUP_SHARED_SURFACE_DURATION,
-            delay: POPUP_SHARED_SURFACE_DELAY,
-            easing: POPUP_IN_EASING,
-            fill: "both",
-          },
-        );
-
-        Promise.allSettled([
-          popupGhostAnimation.finished,
-          popupBackdropAnimation.finished,
-          popupSurfaceAnimation.finished,
-        ]).then(() => {
-          if (motionToken !== popupMotionToken || !isPopupVisible(popup)) {
+        Promise.allSettled([popupGhostAnimation.finished, popupBackdropAnimation.finished]).then(() => {
+          if (motionToken !== popupMotionToken || popup.classList.contains("u-hidden")) {
             return;
           }
 
-          popupSurfaceAnimation = null;
-          popupBackdropAnimation = null;
-          popupGhostAnimation = null;
-          clearPopupSurfaceInlineStyles();
-          removePopupGhost();
-          closeBtn?.focus();
+          popupPanelAnimation = panel.animate(
+            [{ opacity: 0 }, { opacity: 1 }],
+            {
+              duration: POPUP_SHARED_FADE_DURATION,
+              easing: "ease-out",
+              fill: "both",
+            },
+          );
+
+          popupGhostAnimation = ghost.animate(
+            [{ opacity: 1 }, { opacity: 0 }],
+            {
+              duration: POPUP_SHARED_GHOST_FADE_DURATION,
+              easing: "linear",
+              fill: "both",
+            },
+          );
+
+          Promise.allSettled([popupPanelAnimation.finished, popupGhostAnimation.finished]).then(() => {
+            if (motionToken !== popupMotionToken || popup.classList.contains("u-hidden")) {
+              return;
+            }
+            popupPanelAnimation = null;
+            popupBackdropAnimation = null;
+            popupGhostAnimation = null;
+            clearPopupPanelInlineStyles();
+            removePopupGhost();
+          });
         });
-        return;
       }
     } else if (reducedMotion) {
       popupBackdropAnimation = backdrop.animate(
@@ -993,7 +919,7 @@ function openWorkPopup(index, triggerEl) {
         },
       );
 
-      popupSurfaceAnimation = frame.animate(
+      popupPanelAnimation = panel.animate(
         [{ opacity: 0 }, { opacity: 1 }],
         {
           duration: POPUP_REDUCED_DURATION,
@@ -1002,17 +928,12 @@ function openWorkPopup(index, triggerEl) {
         },
       );
 
-      Promise.allSettled([
-        popupSurfaceAnimation.finished,
-        popupBackdropAnimation.finished,
-      ]).then(() => {
-        if (motionToken !== popupMotionToken || !isPopupVisible(popup)) {
+      Promise.allSettled([popupPanelAnimation.finished, popupBackdropAnimation.finished]).then(() => {
+        if (motionToken !== popupMotionToken || popup.classList.contains("u-hidden")) {
           return;
         }
-        popupSurfaceAnimation = null;
+        popupPanelAnimation = null;
         popupBackdropAnimation = null;
-        clearPopupSurfaceInlineStyles();
-        closeBtn?.focus();
       });
     } else {
       popupBackdropAnimation = backdrop.animate(
@@ -1024,37 +945,30 @@ function openWorkPopup(index, triggerEl) {
         },
       );
 
-      popupSurfaceAnimation = frame.animate(
+      popupPanelAnimation = panel.animate(
         [
           { opacity: 0, transform: "translate3d(0, 10px, 0) scale(0.94)" },
           { opacity: 1, transform: "translate3d(0, 0, 0) scale(1)" },
         ],
         {
-          duration: POPUP_OPEN_SURFACE_DURATION,
-          delay: POPUP_OPEN_SURFACE_DELAY,
-          easing: POPUP_IN_EASING,
+          duration: POPUP_OPEN_PANEL_DURATION,
+          delay: POPUP_OPEN_PANEL_DELAY,
+          easing: POPUP_EASING,
           fill: "both",
         },
       );
 
-      Promise.allSettled([
-        popupSurfaceAnimation.finished,
-        popupBackdropAnimation.finished,
-      ]).then(() => {
-        if (motionToken !== popupMotionToken || !isPopupVisible(popup)) {
+      Promise.allSettled([popupPanelAnimation.finished, popupBackdropAnimation.finished]).then(() => {
+        if (motionToken !== popupMotionToken || popup.classList.contains("u-hidden")) {
           return;
         }
-        popupSurfaceAnimation = null;
+        popupPanelAnimation = null;
         popupBackdropAnimation = null;
-        clearPopupSurfaceInlineStyles();
-        closeBtn?.focus();
       });
     }
-    return;
   }
 
   if (closeBtn instanceof HTMLElement) {
-    clearPopupSurfaceInlineStyles();
     closeBtn.focus();
   }
 }
@@ -1222,6 +1136,19 @@ function bindGlobalInteractions() {
       return;
     }
 
+    const themeToggleBtn = event.target.closest("[data-theme-toggle='true']");
+    if (themeToggleBtn) {
+      const currentTheme = getState().theme;
+      const nextTheme =
+        themeToggleBtn.dataset.themeNext === "dark" || themeToggleBtn.dataset.themeNext === "light"
+          ? themeToggleBtn.dataset.themeNext
+          : (currentTheme === "light" ? "dark" : "light");
+      if (nextTheme !== currentTheme) {
+        setState({ theme: nextTheme });
+      }
+      return;
+    }
+
     const fluidRandomBtn = event.target.closest("[data-fluid-play='random']");
     if (fluidRandomBtn) {
       if (getState().playMode) {
@@ -1234,6 +1161,15 @@ function bindGlobalInteractions() {
     if (fluidDefaultBtn) {
       if (getState().playMode) {
         resetFluidPlayModeColor();
+      }
+      return;
+    }
+
+    const legacyThemeBtn = event.target.closest(".navbar__theme-btn");
+    if (legacyThemeBtn) {
+      const nextTheme = legacyThemeBtn.dataset.theme;
+      if ((nextTheme === "dark" || nextTheme === "light") && nextTheme !== getState().theme) {
+        setState({ theme: nextTheme });
       }
       return;
     }
@@ -1341,10 +1277,11 @@ function initSectionObserver() {
 
 function runPostRender(state) {
   setScrollBehavior(state.reducedMotion);
+  applyTheme(state.theme);
+  setFluidTheme(state.theme);
   applyDrawerState(state.drawerOpen);
   if (state.playMode) {
     setContactFabOpen(false);
-    initFluidBackground().catch(() => {});
   } else {
     applyContactFabState(contactFabOpen);
   }
@@ -1360,6 +1297,7 @@ function runPostRender(state) {
   }
 
   initReveal(app);
+  initExperienceCarousel(state.reducedMotion);
   initBubblePhysics();
 
   if (state.playMode) {
@@ -1384,7 +1322,8 @@ function onStateChange(next) {
     || prev.status !== next.status
     || prev.lang !== next.lang
     || prev.cvAvailable !== next.cvAvailable
-    || prev.playMode !== next.playMode;
+    || prev.playMode !== next.playMode
+    || prev.theme !== next.theme;
 
   if (requiresFullRender) {
     renderApp(next);
@@ -1418,7 +1357,7 @@ async function bootstrap() {
 
   initStore();
   bindGlobalInteractions();
-  bindLazyFluidInit();
+  const fluidInitPromise = initFluidBackground();
 
   subscribe(onStateChange);
 
@@ -1426,6 +1365,7 @@ async function bootstrap() {
   runPostRender(getState());
 
   await loadLanguage(getState().lang);
+  await fluidInitPromise;
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       markBootReady();
