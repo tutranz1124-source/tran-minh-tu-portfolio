@@ -114,7 +114,7 @@ function createHeroAvatar(meta, displayName, lang) {
     const imageNode = el("img", "hero__avatar-img", {
       src: avatarHref,
       alt: lang === "vi" ? "Anh dai dien" : "Avatar",
-      loading: "lazy",
+      loading: "eager",
       decoding: "async",
       draggable: "false",
     });
@@ -250,7 +250,7 @@ function createExperienceMedia(item, className) {
     const imageNode = el("img", `${className}-bubble-img`, {
       src,
       alt: "",
-      loading: "lazy",
+      loading: "eager",
       decoding: "async",
       draggable: "false",
     });

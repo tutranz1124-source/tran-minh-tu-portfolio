@@ -82,12 +82,6 @@ function loadSwiperStyle() {
   return swiperStylePromise;
 }
 
-function isStageNearViewport(stageEl) {
-  const rect = stageEl.getBoundingClientRect();
-  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-  return rect.top <= (viewportHeight + 160) && rect.bottom >= -120;
-}
-
 function updateSlideVars(swiper) {
   swiper.slides.forEach((slide) => {
     const abs = Math.min(Math.abs(slide.progress || 0), 1);
@@ -348,23 +342,6 @@ export async function initExperienceCarousel(reducedMotion = false) {
   const canCycle = slideCount > 1;
   const isTabletOrMobile = window.matchMedia("(max-width: 1023px)").matches;
   const touchRatio = isTabletOrMobile ? 1.12 : 1;
-
-  if (!isStageNearViewport(stageEl) && typeof IntersectionObserver === "function") {
-    carouselInitObserver = new IntersectionObserver((entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) {
-        return;
-      }
-      carouselInitObserver?.disconnect();
-      carouselInitObserver = null;
-      initExperienceCarousel(reducedMotion);
-    }, {
-      root: null,
-      rootMargin: "180px 0px 180px 0px",
-      threshold: 0.01,
-    });
-    carouselInitObserver.observe(stageEl);
-    return;
-  }
 
   const layout = applyResponsiveCarouselVars(stageEl);
   const initialEffect = coverflowForStageWidth(layout.stageWidth);
