@@ -48,17 +48,3 @@
     --nav-h: 48px;
   }
 }
-
-html.theme-light {
-  --bg: #eff2f5;
-  --card: #fbfcfd;
-  --cardInner: #f2f5f8;
-  --border: #a7b2c0;
-  --text: #0f172a;
-  --muted: #475569;
-  --cyan: #0284c7;
-  --violet: #6d28d9;
-  --mint: #047857;
-  --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.08);
-  --glow-cyan: 0 0 14px rgba(2, 132, 199, 0.09);
-}

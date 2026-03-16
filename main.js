@@ -4,10 +4,9 @@ import {
   randomizeFluidPlayModeColor,
   resetFluidPlayModeColor,
   setFluidPlayMode,
-  setFluidTheme,
 } from "./src/lib/fluidBackground.js";
 import { initExperienceCarousel } from "./src/lib/experienceCarousel.js";
-import { initBubblePhysics } from "./src/lib/bubblePhysics.js";
+import { destroyBubblePhysics, initBubblePhysics } from "./src/lib/bubblePhysics.js";
 import { initReveal } from "./src/lib/motion.js";
 import { initActiveSectionObserver } from "./src/lib/navActive.js";
 import { renderApp } from "./src/lib/renderApp.js";
@@ -39,6 +38,7 @@ let loaderFallbackTimer = 0;
 let loaderBootReady = false;
 let loaderAnimationDone = false;
 let loaderAnimationTimer = 0;
+let fluidLazyInitBound = false;
 
 const POPUP_OPEN_BACKDROP_DURATION = 200;
 const POPUP_OPEN_PANEL_DURATION = 280;
@@ -56,6 +56,34 @@ const POPUP_SHARED_OVERLAY_DURATION = 180;
 
 function isMobileViewport() {
   return window.matchMedia("(max-width: 767px)").matches;
+}
+
+function shouldEnableBubblePhysics() {
+  const hasHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const cores = Number(navigator.hardwareConcurrency || 8);
+  const memory = Number(navigator.deviceMemory || 8);
+  return hasHover && cores >= 8 && memory >= 8;
+}
+
+function bindLazyFluidInit() {
+  if (fluidLazyInitBound) {
+    return;
+  }
+
+  const triggerInit = () => {
+    initFluidBackground()
+      .finally(() => {
+        window.removeEventListener("pointermove", triggerInit);
+        window.removeEventListener("pointerdown", triggerInit);
+        window.removeEventListener("keydown", triggerInit);
+        fluidLazyInitBound = false;
+      });
+  };
+
+  fluidLazyInitBound = true;
+  window.addEventListener("pointermove", triggerInit, { passive: true, once: true });
+  window.addEventListener("pointerdown", triggerInit, { passive: true, once: true });
+  window.addEventListener("keydown", triggerInit, { passive: true, once: true });
 }
 
 function dismissBootLoader(force = false) {
@@ -122,14 +150,6 @@ function initBootLoaderGate() {
 
 function setScrollBehavior(reducedMotion) {
   document.documentElement.style.scrollBehavior = reducedMotion ? "auto" : "smooth";
-}
-
-function applyTheme(theme) {
-  const nextTheme = theme === "light" ? "light" : "dark";
-  const root = document.documentElement;
-  root.classList.toggle("theme-light", nextTheme === "light");
-  root.classList.toggle("theme-dark", nextTheme === "dark");
-  root.setAttribute("data-theme", nextTheme);
 }
 
 function initNavIndicator() {
@@ -1136,19 +1156,6 @@ function bindGlobalInteractions() {
       return;
     }
 
-    const themeToggleBtn = event.target.closest("[data-theme-toggle='true']");
-    if (themeToggleBtn) {
-      const currentTheme = getState().theme;
-      const nextTheme =
-        themeToggleBtn.dataset.themeNext === "dark" || themeToggleBtn.dataset.themeNext === "light"
-          ? themeToggleBtn.dataset.themeNext
-          : (currentTheme === "light" ? "dark" : "light");
-      if (nextTheme !== currentTheme) {
-        setState({ theme: nextTheme });
-      }
-      return;
-    }
-
     const fluidRandomBtn = event.target.closest("[data-fluid-play='random']");
     if (fluidRandomBtn) {
       if (getState().playMode) {
@@ -1161,15 +1168,6 @@ function bindGlobalInteractions() {
     if (fluidDefaultBtn) {
       if (getState().playMode) {
         resetFluidPlayModeColor();
-      }
-      return;
-    }
-
-    const legacyThemeBtn = event.target.closest(".navbar__theme-btn");
-    if (legacyThemeBtn) {
-      const nextTheme = legacyThemeBtn.dataset.theme;
-      if ((nextTheme === "dark" || nextTheme === "light") && nextTheme !== getState().theme) {
-        setState({ theme: nextTheme });
       }
       return;
     }
@@ -1277,8 +1275,6 @@ function initSectionObserver() {
 
 function runPostRender(state) {
   setScrollBehavior(state.reducedMotion);
-  applyTheme(state.theme);
-  setFluidTheme(state.theme);
   applyDrawerState(state.drawerOpen);
   if (state.playMode) {
     setContactFabOpen(false);
@@ -1298,7 +1294,11 @@ function runPostRender(state) {
 
   initReveal(app);
   initExperienceCarousel(state.reducedMotion);
-  initBubblePhysics();
+  if (shouldEnableBubblePhysics()) {
+    initBubblePhysics();
+  } else {
+    destroyBubblePhysics();
+  }
 
   if (state.playMode) {
     if (observerCleanup) {
@@ -1322,8 +1322,7 @@ function onStateChange(next) {
     || prev.status !== next.status
     || prev.lang !== next.lang
     || prev.cvAvailable !== next.cvAvailable
-    || prev.playMode !== next.playMode
-    || prev.theme !== next.theme;
+    || prev.playMode !== next.playMode;
 
   if (requiresFullRender) {
     renderApp(next);
@@ -1357,7 +1356,7 @@ async function bootstrap() {
 
   initStore();
   bindGlobalInteractions();
-  const fluidInitPromise = initFluidBackground();
+  bindLazyFluidInit();
 
   subscribe(onStateChange);
 
@@ -1365,7 +1364,6 @@ async function bootstrap() {
   runPostRender(getState());
 
   await loadLanguage(getState().lang);
-  await fluidInitPromise;
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       markBootReady();

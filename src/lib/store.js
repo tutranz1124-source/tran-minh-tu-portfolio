@@ -10,7 +10,6 @@ const state = {
   drawerOpen: false,
   cvAvailable: false,
   playMode: false,
-  theme: "dark",
 };
 
 const listeners = new Set();
@@ -56,6 +55,5 @@ function normalizeLang(value) {
 export function initStore() {
   const storedLang = normalizeLang(localStorage.getItem(LANG_KEY));
   state.lang = storedLang;
-  state.theme = "dark";
   state.reducedMotion = false;
 }

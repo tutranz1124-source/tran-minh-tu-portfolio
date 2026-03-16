@@ -33,7 +33,6 @@ const DEFAULT_FLUID_CONFIG = {
 };
 
 const MOBILE_BREAKPOINT_MAX = 767;
-const LIGHT_BG_COLOR = { r: 239, g: 242, b: 245 };
 const DARK_BG_COLOR = { r: 0, g: 0, b: 0 };
 const PLAY_DEFAULT_MONO_COLOR = { r: 166, g: 174, b: 188 };
 
@@ -52,7 +51,6 @@ let fluidBaseConfig = {
   POINTER_COLOR_MULTIPLIER: DEFAULT_FLUID_CONFIG.POINTER_COLOR_MULTIPLIER,
 };
 let fluidPlayModeEnabled = false;
-let fluidTheme = "dark";
 let fluidPlayModeColorOverride = null;
 
 const PLAY_RADIUS_MULTIPLIER = 1.4;
@@ -66,7 +64,7 @@ function isMobileViewport() {
 }
 
 function getFluidBackgroundColor() {
-  return fluidTheme === "light" ? { ...LIGHT_BG_COLOR } : { ...DARK_BG_COLOR };
+  return { ...DARK_BG_COLOR };
 }
 
 function getFluidCanvasColorCss() {
@@ -238,10 +236,9 @@ function applyFluidPlayModeConfig() {
   const nextColorMultiplier = fluidPlayModeEnabled
     ? Number((baseColorMultiplier * PLAY_COLOR_MULTIPLIER).toFixed(4))
     : baseColorMultiplier;
-  const lightTheme = fluidTheme === "light";
   const defaultMonoColor = fluidPlayModeEnabled
     ? { ...PLAY_DEFAULT_MONO_COLOR }
-    : (lightTheme ? { r: 0, g: 0, b: 0 } : { ...DEFAULT_FLUID_CONFIG.MONO_COLOR });
+    : { ...DEFAULT_FLUID_CONFIG.MONO_COLOR };
   const monoColor = normalizeRgbColor(fluidPlayModeColorOverride) ?? defaultMonoColor;
 
   fluidApi.setConfig({
@@ -249,9 +246,7 @@ function applyFluidPlayModeConfig() {
     SPLAT_FORCE: nextForce,
     POINTER_DELTA_LIMIT: nextDeltaLimit,
     DENSITY_DISSIPATION: nextDensity,
-    POINTER_COLOR_MULTIPLIER: lightTheme
-      ? Number((nextColorMultiplier * 0.92).toFixed(4))
-      : nextColorMultiplier,
+    POINTER_COLOR_MULTIPLIER: nextColorMultiplier,
     MONO_COLOR: monoColor,
     BACK_COLOR: getFluidBackgroundColor(),
     TRANSPARENT: false,
@@ -264,22 +259,6 @@ export function setFluidPlayMode(isEnabled) {
     fluidPlayModeColorOverride = null;
   }
   applyFluidPlayModeConfig();
-}
-
-export function setFluidTheme(theme) {
-  const previousTheme = fluidTheme;
-  fluidTheme = theme === "light" ? "light" : "dark";
-  if (!fluidPlayModeEnabled) {
-    fluidPlayModeColorOverride = null;
-  }
-  const canvas = document.getElementById("bg-canvas");
-  if (canvas) {
-    canvas.style.background = getFluidCanvasColorCss();
-  }
-  applyFluidPlayModeConfig();
-  if (fluidApi?.reset && previousTheme !== fluidTheme) {
-    fluidApi.reset();
-  }
 }
 
 export function randomizeFluidPlayModeColor() {

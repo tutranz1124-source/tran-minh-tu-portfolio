@@ -84,18 +84,6 @@ function createGlobeIcon() {
   ]);
 }
 
-function createSunIcon() {
-  return el("svg", "navbar__control-icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
-    el("path", "", { d: "M12 5.5a1 1 0 0 1 1 1v.6a1 1 0 1 1-2 0v-.6a1 1 0 0 1 1-1Zm0 10.8a1 1 0 0 1 1 1v.6a1 1 0 1 1-2 0v-.6a1 1 0 0 1 1-1ZM6.4 8.1a1 1 0 0 1 1.4 0l.4.4a1 1 0 0 1-1.4 1.4l-.4-.4a1 1 0 0 1 0-1.4Zm8.9 8.9a1 1 0 0 1 1.4 0l.4.4a1 1 0 0 1-1.4 1.4l-.4-.4a1 1 0 0 1 0-1.4ZM5.5 12a1 1 0 0 1 1-1h.6a1 1 0 1 1 0 2h-.6a1 1 0 0 1-1-1Zm10.8 0a1 1 0 0 1 1-1h.6a1 1 0 1 1 0 2h-.6a1 1 0 0 1-1-1ZM6.8 17a1 1 0 0 1 1.4-1.4l.4.4a1 1 0 1 1-1.4 1.4l-.4-.4Zm8.9-8.9a1 1 0 0 1 1.4-1.4l.4.4a1 1 0 1 1-1.4 1.4l-.4-.4ZM12 8.3a3.7 3.7 0 1 1 0 7.4 3.7 3.7 0 0 1 0-7.4Z" }),
-  ]);
-}
-
-function createMoonIcon() {
-  return el("svg", "navbar__control-icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
-    el("path", "", { d: "M14.6 2.5a1 1 0 0 1 .8 1.5A8.5 8.5 0 1 0 20 15.6a1 1 0 0 1 1.5.8 10.5 10.5 0 1 1-7-13.9h.1Z" }),
-  ]);
-}
-
 function initialsFromName(name) {
   if (typeof name !== "string") {
     return "AV";
@@ -302,13 +290,11 @@ function createSkeleton() {
 }
 
 function createNavbarContent(state) {
-  const { lang, playMode, theme } = state;
+  const { lang, playMode } = state;
   const root = el("div", "navbar__card");
   const inner = el("div", "navbar__inner", { role: "navigation", "aria-label": "Main navigation" });
   const nextLang = lang === "vi" ? "en" : "vi";
-  const nextTheme = theme === "light" ? "dark" : "light";
   const langLabel = lang === "vi" ? "VI" : "EN";
-  const themeIcon = theme === "light" ? createSunIcon() : createMoonIcon();
 
   const right = el("div", "navbar__right");
   right.appendChild(
@@ -323,21 +309,6 @@ function createNavbarContent(state) {
       [
         createGlobeIcon(),
         el("span", "navbar__control-text", {}, [langLabel]),
-      ],
-    ),
-  );
-  right.appendChild(
-    el(
-      "button",
-      `navbar__control-btn navbar__control-btn--theme${theme === "light" ? " is-light" : " is-dark"}`,
-      {
-        type: "button",
-        dataset: { themeToggle: "true", themeNext: nextTheme },
-        "aria-label": theme === "light" ? "Switch to dark mode" : "Switch to light mode",
-      },
-      [
-        themeIcon,
-        el("span", "u-sr-only", {}, [theme === "light" ? "Dark mode" : "Light mode"]),
       ],
     ),
   );
@@ -484,7 +455,7 @@ function createExperienceSection(content, lang) {
   return section;
 }
 
-function createExperienceCarouselSection(content, lang, theme = "dark") {
+function createExperienceCarouselSection(content, lang) {
   const experience = content.experience ?? {};
   const experienceItems = experience.items ?? [];
   const works = getDetailsWorkItems(content);
@@ -503,21 +474,13 @@ function createExperienceCarouselSection(content, lang, theme = "dark") {
   const swiper = el("div", "swiper exp-carousel", { id: "experience-carousel-swiper" });
   const wrapper = el("div", "swiper-wrapper");
 
-  const palette = theme === "light"
-    ? [
-      ["#f8fbff", "#edf4ff"],
-      ["#f7fbff", "#e9f1ff"],
-      ["#fbfdff", "#f0f5ff"],
-      ["#f6fbff", "#eaf2ff"],
-      ["#f9fcff", "#eef3ff"],
-    ]
-    : [
-      ["#05070c", "#070b16"],
-      ["#05070c", "#08121f"],
-      ["#05070c", "#0a1525"],
-      ["#05070c", "#091321"],
-      ["#05070c", "#0b1729"],
-    ];
+  const palette = [
+    ["#05070c", "#070b16"],
+    ["#05070c", "#08121f"],
+    ["#05070c", "#0a1525"],
+    ["#05070c", "#091321"],
+    ["#05070c", "#0b1729"],
+  ];
 
   carouselItems.forEach((item, index) => {
     const colors = palette[index % palette.length];
@@ -717,7 +680,7 @@ export function renderApp(state) {
     fragment.appendChild(createPlayModeScreen(state));
   } else {
     fragment.appendChild(el("section", "section topband topband--single reveal reveal--section", { id: "top" }, [createHeroCard(state, state.content)]));
-    const experienceCarousel = createExperienceCarouselSection(state.content, state.lang, state.theme);
+    const experienceCarousel = createExperienceCarouselSection(state.content, state.lang);
     if (experienceCarousel) {
       fragment.appendChild(experienceCarousel);
     }
