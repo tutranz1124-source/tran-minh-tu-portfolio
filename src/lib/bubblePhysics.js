@@ -75,11 +75,25 @@ function createBubbleState(el, index, width, height) {
     el,
     x,
     y,
+    xRatio,
+    yRatio,
     vx,
     vy,
     r,
     mass: Math.max(1, r * r * 0.01),
   };
+}
+
+function resetGroupToSeededLayout(group) {
+  const width = group.width;
+  const height = group.height;
+
+  group.bubbles.forEach((bubble) => {
+    bubble.x = clamp(bubble.xRatio * width, bubble.r, Math.max(bubble.r, width - bubble.r));
+    bubble.y = clamp(bubble.yRatio * height, bubble.r, Math.max(bubble.r, height - bubble.r));
+  });
+
+  resolveOverlaps(group.bubbles, width, height);
 }
 
 function resolveOverlaps(bubbles, width, height) {
@@ -215,6 +229,11 @@ function tick(nowMs) {
   groups.forEach((group) => {
     const groupActive = isGroupActive(group);
     if (!groupActive) {
+      if (group.wasActive || group.dirty) {
+        updateGroupBounds(group);
+        resetGroupToSeededLayout(group);
+        renderGroup(group);
+      }
       group.wasActive = false;
       return;
     }
@@ -298,8 +317,12 @@ export function initBubblePhysics() {
       height,
       dirty: false,
       carouselGroup: container.classList.contains("exp-carousel__media-bubbles"),
-      wasActive: true,
+      wasActive: isGroupActive({ container, carouselGroup: container.classList.contains("exp-carousel__media-bubbles") }),
     });
+
+    const group = groups[groups.length - 1];
+    resetGroupToSeededLayout(group);
+    renderGroup(group);
 
     resizeObserver?.observe(container);
   });

@@ -172,7 +172,7 @@ function applyResponsiveCarouselVars(stageEl) {
   const isTablet = !isMobile && viewportWidth <= 1023;
   const mobileArrowScale = isMobile ? 0.8 : 1;
 
-  const slideWidthTarget = stageWidth * (isMobile ? 0.8 : (isTablet ? 0.46 : 0.34));
+  const slideWidthTarget = stageWidth * (isMobile ? 0.82 : (isTablet ? 0.48 : 0.36));
   const slideWidthMin = isMobile ? 206 : (isTablet ? 228 : 252);
   const slideWidthMaxRaw = isMobile ? 312 : (isTablet ? 340 : 360);
   const slideWidthMax = Math.max(slideWidthMin, Math.min(slideWidthMaxRaw, stageWidth - 18));
@@ -213,9 +213,9 @@ function coverflowForStageWidth(stageWidth) {
   const ratio = clamp((stageWidth - 280) / (1240 - 280), 0, 1);
   return {
     rotate: 0,
-    stretch: Math.round(24 + ratio * (90 - 24)),
-    depth: Math.round(105 + ratio * (200 - 105)),
-    modifier: Number((1 + ratio * 0.15).toFixed(2)),
+    stretch: Math.round(18 + ratio * (56 - 18)),
+    depth: Math.round(78 + ratio * (132 - 78)),
+    modifier: Number((0.94 + ratio * 0.08).toFixed(2)),
     slideShadows: false,
   };
 }
