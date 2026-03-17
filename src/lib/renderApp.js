@@ -32,12 +32,51 @@ function safeHref(raw) {
   return "";
 }
 
-function createActionButton({ label, href, kind = "secondary" }) {
-  return el("a", `btn btn--${kind}`, {
+function createActionButton({ label, href, kind = "secondary", extraClass = "" }) {
+  const className = extraClass ? `btn btn--${kind} ${extraClass}` : `btn btn--${kind}`;
+  return el("a", className, {
     href,
     target: href.startsWith("http") ? "_blank" : "",
     rel: href.startsWith("http") ? "noopener noreferrer" : "",
   }, [label]);
+}
+
+function getCvActions(meta, lang, availability) {
+  const links = meta?.links ?? {};
+  const options = [
+    {
+      key: "en",
+      href: safeHref(links.cv_en || links.cvEn || ""),
+      label: "CV EN",
+    },
+    {
+      key: "vi",
+      href: safeHref(links.cv_vi || links.cvVi || ""),
+      label: "CV VI",
+    },
+  ].filter((item) => item.href);
+
+  if (!options.length) {
+    const legacyHref = safeHref(links.cv || "");
+    if (!legacyHref) {
+      return [];
+    }
+    return [{
+      key: "default",
+      href: legacyHref,
+      label: lang === "vi" ? "Tai CV" : "Download CV",
+    }];
+  }
+
+  if (typeof availability === "boolean") {
+    return availability ? options : [];
+  }
+
+  if (!availability || typeof availability !== "object") {
+    return options;
+  }
+
+  return options.filter((item) => Boolean(availability[item.key]));
 }
 
 function createCircleAction({ label, href, iconSvg, className = "", tip = "" }) {
@@ -372,7 +411,7 @@ function createHeroCard(state, content) {
   const displayName = activeName(content, lang);
   const heroBadge = typeof hero.badge === "string" ? hero.badge.trim() : "";
   const emailHref = meta.email ? `mailto:${meta.email}` : "";
-  const linkedinHref = safeHref(meta.links?.linkedin || "");
+  const cvActions = getCvActions(meta, lang, state.cvAvailable);
 
   const card = el("article", "card hero rolling-panel reveal", { "aria-labelledby": "hero-title" });
   if (heroBadge) {
@@ -402,13 +441,22 @@ function createHeroCard(state, content) {
   cta.appendChild(
     createActionButton({
       label: lang === "vi" ? "Lien he" : "Contact",
-      href: emailHref || linkedinHref || "#top",
+      href: emailHref || "#top",
       kind: "primary",
     }),
   );
-  const cvHref = safeHref(meta.links?.cv || "");
-  if (state.cvAvailable && cvHref) {
-    cta.appendChild(createActionButton({ label: lang === "vi" ? "Tai CV" : "Download CV", href: cvHref }));
+  if (cvActions.length) {
+    const cvGroup = el("div", "hero__cv-options");
+    cvActions.forEach((action) => {
+      cvGroup.appendChild(
+        createActionButton({
+          label: action.label,
+          href: action.href,
+          extraClass: "btn--cv-option",
+        }),
+      );
+    });
+    cta.appendChild(cvGroup);
   }
   card.appendChild(cta);
   return card;
@@ -564,8 +612,7 @@ function createFloatingContactMenu(content, state) {
   const lang = state.lang;
   const meta = content.meta ?? {};
   const emailHref = meta.email ? `mailto:${meta.email}` : "";
-  const linkedinHref = safeHref(meta.links?.linkedin || "");
-  const cvHref = safeHref(meta.links?.cv || "");
+  const cvActions = getCvActions(meta, lang, state.cvAvailable);
 
   const root = el("div", "contact-fab", { id: "contact-fab" });
   const actions = el("div", "contact-fab__actions", { id: "contact-fab-actions", "aria-hidden": "true" });
@@ -584,33 +631,19 @@ function createFloatingContactMenu(content, state) {
     );
   }
 
-  if (linkedinHref) {
+  cvActions.forEach((action) => {
     actions.appendChild(
       createCircleAction({
-        label: "LinkedIn",
-        href: linkedinHref,
-        className: "contact-fab__action--linkedin",
-        tip: "LinkedIn",
-        iconSvg: el("svg", "contact-fab__icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
-          el("path", "", { d: "M6.4 8.5a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2ZM4.7 10h3.3v9.7H4.7V10Zm5 0H13v1.4h.1c.5-.9 1.7-1.7 3.4-1.7 3 0 3.5 2 3.5 4.5v5.5h-3.3v-4.9c0-1.2 0-2.7-1.7-2.7-1.7 0-2 1.3-2 2.6v5h-3.3V10Z" }),
-        ]),
-      }),
-    );
-  }
-
-  if (state.cvAvailable && cvHref) {
-    actions.appendChild(
-      createCircleAction({
-        label: lang === "vi" ? "Tai CV" : "Download CV",
-        href: cvHref,
-        className: "contact-fab__action--cv",
-        tip: "CV",
+        label: action.label,
+        href: action.href,
+        className: `contact-fab__action--cv contact-fab__action--cv-${action.key}`,
+        tip: action.label,
         iconSvg: el("svg", "contact-fab__icon", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
           el("path", "", { d: "M12 3c.6 0 1 .4 1 1v8.1l2.5-2.5a1 1 0 1 1 1.4 1.4l-4.2 4.2a1 1 0 0 1-1.4 0L7.1 11a1 1 0 1 1 1.4-1.4L11 12.1V4c0-.6.4-1 1-1ZM5.2 17h13.6A2.2 2.2 0 0 1 21 19.2v.6A2.2 2.2 0 0 1 18.8 22H5.2A2.2 2.2 0 0 1 3 19.8v-.6A2.2 2.2 0 0 1 5.2 17Zm0 2v1h13.6v-1H5.2Z" }),
         ]),
       }),
     );
-  }
+  });
 
   if (!actions.children.length) {
     return null;

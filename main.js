@@ -1015,6 +1015,30 @@ async function checkResourceExists(url) {
   return false;
 }
 
+function getCvResourceMap(content) {
+  const links = content?.meta?.links ?? {};
+  return {
+    en: links.cv_en || links.cvEn || "",
+    vi: links.cv_vi || links.cvVi || "",
+    default: links.cv || "",
+  };
+}
+
+async function checkCvAvailability(content) {
+  const cvLinks = getCvResourceMap(content);
+  const [en, vi, fallback] = await Promise.all([
+    checkResourceExists(cvLinks.en),
+    checkResourceExists(cvLinks.vi),
+    checkResourceExists(cvLinks.default),
+  ]);
+
+  return {
+    en,
+    vi,
+    default: fallback,
+  };
+}
+
 function announceLang(lang) {
   const region = document.getElementById("sr-live");
   if (!region) {
@@ -1056,8 +1080,7 @@ async function loadLanguage(nextLang) {
       throw new Error(validation.errors[0] || "Invalid content format");
     }
 
-    const cvUrl = content.meta?.links?.cv || "";
-    const cvAvailable = await checkResourceExists(cvUrl);
+    const cvAvailable = await checkCvAvailability(content);
     if (requestSeq !== languageRequestSeq) {
       return;
     }
@@ -1083,7 +1106,7 @@ async function loadLanguage(nextLang) {
 
     const fallback = getLastGoodContent();
     if (fallback) {
-      const fallbackCv = await checkResourceExists(fallback.meta?.links?.cv || "");
+      const fallbackCv = await checkCvAvailability(fallback);
       if (requestSeq !== languageRequestSeq) {
         return;
       }

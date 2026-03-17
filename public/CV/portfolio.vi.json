@@ -5,16 +5,16 @@
     "title": "Kỹ sư phần mềm / Lập trình viên Full-stack",
     "email": "tutranz0101@gmail.com",
     "links": {
-      "linkedin": "https://www.linkedin.com/in/tu-tran-115350294/",
-      "cv": "./public/CV/cv.pdf"
+      "cv_en": "./public/CV/cv-en.pdf",
+      "cv_vi": "./public/CV/cv-vi.pdf"
     }
   },
   "hero": {
     "badge": "",
-    "tagline": "Mình là kỹ sư phần mềm full-stack, làm end-to-end từ backend service tới desktop app và công cụ vận hành.",
+    "tagline": "Mình là kỹ sư phần mềm full-stack, xây dựng giải pháp end-to-end từ web app, backend service đến vận hành hệ thống.",
     "about_paragraphs": [
-      "Hiện mình là sole developer tại Công ty CP Phà An Giang: xây dựng hệ thống bán soát vé, quản lý hệ thống và server tự chủ cho công ty.",
-      "Điểm mạnh của mình là thích ứng nhanh theo môi trường và yêu cầu dự án: từng tự học và triển khai từ web, low-code platform tới application, embedded/chip và server để đáp ứng đúng nhu cầu khách hàng."
+      "Hiện mình là sole developer tại Công ty CP Phà An Giang, phụ trách hệ thống bán vé và vận hành cho 7 bến phà, khoảng 60 người dùng, xử lý 15k-40k vé mỗi ngày.",
+      "Điểm mạnh của mình là học nhanh, làm rõ nhu cầu và triển khai giải pháp phù hợp từ web, low-code đến server/on-prem và tích hợp thiết bị."
     ]
   },
   "experience": {
@@ -23,8 +23,8 @@
     "items": [
       {
         "date": "04/2024 - 06/2024, HCM",
-        "role": "Lập trình viên \nCheck Unlock VN",
-        "desc": "Mục tiêu: website WordPress phục vụ quảng cáo dịch vụ và chatbot Telegram phục vụ khách hàng.\nTech: WordPress, Python, JavaScript, Cloudflare Worker, PHP",
+        "role": "Lập trình viên WordPress\nCheck Unlock VN",
+        "desc": "Mục tiêu: triển khai website WordPress cho tra cứu thông tin và gửi yêu cầu dịch vụ từ khách hàng.\nTech: WordPress, PHP, Telegram Bot API, Python, JavaScript",
         "images": [
           "./public/CV/images/placeholder-1.svg",
           "./public/CV/images/placeholder-2.svg",
@@ -34,7 +34,7 @@
       {
         "date": "09/2024 - 12/2024, Canada",
         "role": "Lập trình viên ứng dụng\nHonest Agency",
-        "desc": "Mục tiêu: xây dựng prototype cho dashboard AI.\nTech: Noloco, Airtable, Zoho Analytics",
+        "desc": "Mục tiêu: tham gia phát triển prototype dashboard doanh nghiệp có hỗ trợ AI cho phân tích hiệu suất, quản lý dữ liệu CRM và báo cáo/insight.\nTech: NoLoco, Airtable, Zoho Analytics",
         "images": [
           "./public/CV/images/placeholder-1.svg",
           "./public/CV/images/placeholder-2.svg",
@@ -44,7 +44,7 @@
       {
         "date": "10/2025 - nay, An Giang",
         "role": "Kỹ sư phần mềm\nCông ty CP Phà An Giang (AGF)",
-        "desc": "Mục tiêu: xây dựng hệ thống bán/soát vé với quy mô hoạt động lớn.\nTech: Go, SQLite, REST API, Windows scripting (.bat/PowerShell)",
+        "desc": "Mục tiêu: xây dựng hệ thống bán vé và vận hành cho 7 bến phà, khoảng 60 người dùng, xử lý 15k-40k vé mỗi ngày.\nTech: Go, SQLite, REST APIs, Windows scripting (.bat/PowerShell)",
         "images": [
           "./public/CV/images/placeholder-1.svg",
           "./public/CV/images/placeholder-2.svg",
@@ -62,23 +62,23 @@
       },
       {
         "key": "Frontend",
-        "value": "React, HTML/CSS, SCSS, Vanilla JS"
+        "value": "React, HTML/CSS, WordPress, SCSS"
       },
       {
         "key": "Backend",
-        "value": "REST API, JWT Auth, Net/HTTP"
+        "value": "REST APIs, JWT Auth, net/http"
       },
       {
         "key": "Cơ sở dữ liệu",
-        "value": "SQLite, PostgreSQL"
+        "value": "SQLite, PostgreSQL, Airtable"
       },
       {
-        "key": "Hệ thống",
-        "value": "Windows (PowerShell/.bat)"
+        "key": "Công cụ / Nền tảng",
+        "value": "NoLoco, Zoho Analytics, Cloudflare Workers"
       },
       {
-        "key": "Vận hành",
-        "value": "Backup/restore, failover, watchdog monitoring"
+        "key": "Hệ thống / Vận hành",
+        "value": "Windows (PowerShell/.bat), Backup/restore, failover"
       }
     ]
   },
@@ -88,70 +88,70 @@
   "details_work": {
     "items": [
       {
-        "name": "WordPress website + Telegram automation",
+        "name": "Website WordPress + Telegram Automation",
         "meta": "Check Unlock VN, 04/2024 - 06/2024",
         "desc": {
-          "goal": "Xây website WordPress phục vụ quảng cáo dịch vụ hỗ trợ iCloud và tra cứu ID sản phẩm từ dữ liệu có sẵn.",
-          "role": "Lập trình viên freelance phụ trách triển khai end-to-end.",
+          "goal": "Triển khai website WordPress cho tra cứu thông tin và gửi yêu cầu dịch vụ từ khách hàng.",
+          "role": "Lập trình viên WordPress freelance phụ trách triển khai end-to-end.",
           "job": {
-            "summary": "Thiết kế và triển khai nền tảng WordPress + automation cho vận hành dịch vụ.",
+            "summary": "Xây website WordPress và Telegram automation để hỗ trợ vận hành dịch vụ khách hàng.",
             "sub_jobs": [
-              "Xây website tra cứu ID sản phẩm cùng giao diện thân thiện với người dùng.",
-              "Phát triển plugin/tính năng bằng PHP theo yêu cầu khách hàng.",
-              "Tư vấn cấu hình hosting phù hợp để tối ưu chi phí và độ ổn định.",
-              "Xây chatbot Telegram bằng Cloudflare Worker để hỗ trợ người dùng dịch vụ."
+              "Triển khai website WordPress cho tra cứu thông tin từ dữ liệu sẵn có và gửi yêu cầu dịch vụ.",
+              "Phát triển plugin/tính năng PHP theo yêu cầu khách hàng.",
+              "Xây Telegram chatbot automation chạy trên Cloudflare Workers.",
+              "Tối ưu luồng gửi yêu cầu để khách hàng thao tác thuận tiện hơn."
             ]
           },
           "result": [
             "Website đáp ứng nhu cầu của khách hàng.",
-            "Telegram chatbot đạt 1.500 lượt tương tác trong 2 tuần."
+            "Telegram chatbot đạt khoảng 1.500 người tham gia trong khoảng 2 tuần."
           ],
-          "tech": "WordPress, PHP, Telegram Bot API, JavaScript, Cloudflare Worker"
+          "tech": "WordPress, PHP, Telegram Bot API, Python, JavaScript"
         }
       },
       {
         "name": "Prototype dashboard doanh nghiệp có hỗ trợ AI",
         "meta": "Honest Agency (Canada), 09/2024 - 12/2024",
         "desc": {
-          "goal": "Xây dựng prototype dashboard tích hợp AI cho phân tích hiệu suất, CRM và báo cáo insight.",
-          "role": "Lập trình viên ứng dụng, đồng thời hỗ trợ điều phối phạm vi theo hướng Project Manager.",
+          "goal": "Phát triển prototype dashboard doanh nghiệp có hỗ trợ AI cho phân tích hiệu suất, quản lý dữ liệu CRM và báo cáo/insight.",
+          "role": "Thực tập Lập trình viên Ứng dụng, đồng thời hỗ trợ làm rõ phạm vi và phối hợp mục tiêu theo tuần với stakeholders.",
           "job": {
-            "summary": "Nghiên cứu giải pháp low-code và dựng bản demo theo mục tiêu kinh doanh.",
+            "summary": "Đánh giá stack low-code và tham gia xây prototype phù hợp với mục tiêu kinh doanh.",
             "sub_jobs": [
-              "So sánh các nền tảng low-code theo tiêu chí tốc độ triển khai và khả năng mở rộng.",
-              "Thiết kế luồng dữ liệu kết nối giữa Airtable, Noloco và Zoho Analytics.",
-              "Xây các tính năng cốt lõi để demo trực tiếp.",
-              "Làm rõ requirement theo sprint để giảm rủi ro thay đổi phạm vi."
+              "Tham gia phát triển prototype dashboard doanh nghiệp có hỗ trợ AI.",
+              "Đánh giá và triển khai stack low-code gồm NoLoco, Airtable và Zoho Analytics.",
+              "Thu thập yêu cầu, làm rõ phạm vi, ưu tiên tính năng và phối hợp mục tiêu theo tuần với stakeholders.",
+              "Cân bằng giữa tốc độ bàn giao, chi phí và mức độ phù hợp của giải pháp."
             ]
           },
           "result": [
-            "Prototype đáp ứng nhu cầu khách hàng và hỗ trợ quyết định hướng phát triển.",
-            "Bàn giao đầy đủ tài liệu kỹ thuật cho giai đoạn phát triển sau."
+            "Prototype đáp ứng nhu cầu khách hàng và hỗ trợ định hướng phát triển sản phẩm.",
+            "Tối ưu giữa chi phí, tốc độ bàn giao và mức độ phù hợp của giải pháp."
           ],
-          "tech": "Noloco, Airtable, Zoho Analytics"
+          "tech": "NoLoco, Airtable, Zoho Analytics"
         }
       },
       {
-        "name": "Hệ thống bán soát vé & vận hành bến phà",
+        "name": "Hệ thống bán vé & vận hành phà AGF",
         "meta": "Công ty CP Phà An Giang, 10/2025 - nay",
         "desc": {
-          "goal": "Xây hệ thống bán vé và vận hành cho 7 bến với khoảng 60 người dùng và tải giao dịch lớn mỗi ngày.",
-          "role": "Sole developer phụ trách toàn bộ vòng đời sản phẩm từ thiết kế đến vận hành.",
+          "goal": "Thiết kế và phát triển hệ thống bán vé và vận hành cho 7 bến phà, khoảng 60 người dùng, xử lý 15k-40k vé mỗi ngày.",
+          "role": "Kỹ sư phần mềm (phụ trách end-to-end) phụ trách toàn bộ vòng đời sản phẩm từ thiết kế, phát triển đến vận hành.",
           "job": {
-            "summary": "Triển khai nền tảng bán/soát vé và hạ tầng server tự chủ, tối ưu cho vận hành.",
+            "summary": "Triển khai nền tảng bán vé và vận hành phà cùng hạ tầng server tự chủ, tối ưu cho vận hành hằng ngày.",
             "sub_jobs": [
-              "Xây web bán vé tích hợp với phần mềm Chip Nanopi Neo soát vé tự phát triển.",
-              "Phát triển server chính + server phụ cho hệ thống.",
-              "Xây web quản lý dữ liệu và thống kê báo cáo nội bộ.",
-              "Tối ưu hiệu năng, chi phí vận hành và giảm mức phụ thuộc Internet."
+              "Phát triển 2 web app: web bán vé và web quản trị/thống kê vé - hóa đơn.",
+              "Triển khai 1 Admin Server self-host để quản lý tập trung/báo cáo và Mini Servers tại từng bến cho vận hành cục bộ.",
+              "Tích hợp NanoPi để scan/soát vé.",
+              "Xây dựng cơ chế backup/restore và failover để giảm gián đoạn khi có sự cố mạng hoặc thiết bị."
             ]
           },
           "result": [
-            "Giảm thời gian soát vé từ khoảng 3 giây xuống 0.5-1 giây.",
-            "Giảm đáng kể chi phí phụ thuộc bên thứ ba cho bán soát vé và duy trì server.",
-            "Hệ thống dễ dùng và cài đặt cho cả người dùng non-tech."
+            "Thay thế hoàn toàn hệ thống cũ dù không có quyền truy cập source code.",
+            "Giảm độ trễ soát vé khoảng 75% trong quy trình vận hành thực tế.",
+            "Đơn giản hóa cài đặt và sử dụng cho người không chuyên, đồng thời giảm chi phí duy trì và tăng tự chủ công nghệ."
           ],
-          "tech": "Go, SQLite, REST API, JWT Auth, Vanilla JS, Windows scripting (.bat/PowerShell)"
+          "tech": "Go, SQLite, REST APIs, JWT Auth, Vanilla JS, Windows scripting (.bat/PowerShell)"
         }
       }
     ]

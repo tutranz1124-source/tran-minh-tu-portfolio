@@ -8,7 +8,11 @@ const state = {
   reducedMotion: false,
   activeSection: "top",
   drawerOpen: false,
-  cvAvailable: false,
+  cvAvailable: {
+    en: false,
+    vi: false,
+    default: false,
+  },
   playMode: false,
 };
 

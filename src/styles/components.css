@@ -695,6 +695,17 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  align-items: center;
+}
+
+.hero__cv-options {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero__cv-options .btn {
+  min-width: 98px;
 }
 
 .social-links {
@@ -1606,12 +1617,16 @@
   color: rgba(165, 243, 252, 0.98);
 }
 
-.contact-fab__action--linkedin .contact-fab__icon {
-  color: rgba(147, 197, 253, 0.98);
-}
-
 .contact-fab__action--cv .contact-fab__icon {
   color: rgba(253, 230, 138, 0.98);
+}
+
+.contact-fab__action--cv-en .contact-fab__icon {
+  color: rgba(253, 230, 138, 0.98);
+}
+
+.contact-fab__action--cv-vi .contact-fab__icon {
+  color: rgba(165, 243, 252, 0.98);
 }
 
 .contact-fab__trigger {
@@ -2239,7 +2254,7 @@ li,
   .hero__cta {
     margin-top: 12px;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
   }
 
@@ -2247,6 +2262,13 @@ li,
     width: 100%;
     height: 42px;
     padding: 0 12px;
+  }
+
+  .hero__cv-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
   }
 
   .hero__cta .btn--primary {
@@ -2414,12 +2436,12 @@ li,
     --nav-control-w: 68px;
   }
 
-  .hero__cta {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .hero__cta .btn {
     width: 100%;
+  }
+
+  .hero__cv-options {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .drawer__panel {

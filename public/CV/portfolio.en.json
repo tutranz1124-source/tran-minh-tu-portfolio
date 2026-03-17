@@ -5,16 +5,16 @@
     "title": "Software Engineer / Full-stack Developer",
     "email": "tutranz0101@gmail.com",
     "links": {
-      "linkedin": "https://www.linkedin.com/in/tu-tran-115350294/",
-      "cv": "./public/CV/cv.pdf"
+      "cv_en": "./public/CV/cv-en.pdf",
+      "cv_vi": "./public/CV/cv-vi.pdf"
     }
   },
   "hero": {
     "badge": "",
-    "tagline": "I’m a full-stack software engineer who builds end-to-end solutions—from backend services to desktop apps and operations tooling.",
+    "tagline": "I am a full-stack software engineer who builds end-to-end solutions across web apps, backend services, and system operations.",
     "about_paragraphs": [
-      "I’m currently the sole developer at An Giang Ferry JSC, building a ticketing/validation system, internal management tools, and a self-managed server setup for day-to-day operations.",
-      "My strength is adapting quickly to different environments and project needs. I’ve self-learned and shipped across web, low-code platforms, applications, embedded/chip systems, and servers to meet real customer requirements."
+      "I am currently the sole developer at An Giang Ferry JSC, building a ticketing and ferry operations system for 7 ferry terminals, around 60 users, handling 15k-40k tickets per day.",
+      "My strength is adapting quickly, clarifying requirements, and delivering practical solutions across web, low-code, on-prem/server environments, and device integration."
     ]
   },
   "experience": {
@@ -23,8 +23,8 @@
     "items": [
       {
         "date": "Apr 2024 - Jun 2024, Ho Chi Minh City",
-        "role": "Developer\nCheck Unlock VN",
-        "desc": "Goal: build a WordPress website for service promotion and a Telegram chatbot to support customers.\nTech: WordPress, Python, JavaScript, Cloudflare Worker, PHP",
+        "role": "WordPress Developer\nCheck Unlock VN",
+        "desc": "Goal: deliver a WordPress website for information lookup and service request submission.\nTech: WordPress, PHP, Telegram Bot API, Python, JavaScript",
         "images": [
           "./public/CV/images/placeholder-1.svg",
           "./public/CV/images/placeholder-2.svg",
@@ -34,7 +34,7 @@
       {
         "date": "Sep 2024 - Dec 2024, Canada",
         "role": "Application Developer\nHonest Agency",
-        "desc": "Goal: build a prototype for an AI-enabled dashboard.\nTech: Noloco, Airtable, Zoho Analytics",
+        "desc": "Goal: contribute to an AI-assisted business dashboard prototype for performance analysis, CRM data management, and reporting/insights.\nTech: NoLoco, Airtable, Zoho Analytics",
         "images": [
           "./public/CV/images/placeholder-1.svg",
           "./public/CV/images/placeholder-2.svg",
@@ -44,7 +44,7 @@
       {
         "date": "Oct 2025 - Present, An Giang",
         "role": "Software Engineer\nAn Giang Ferry JSC (AGF)",
-        "desc": "Goal: build a large-scale ticket sales/validation system.\nTech: Go, SQLite, REST APIs, Windows scripting (.bat/PowerShell)",
+        "desc": "Goal: build a ticketing and ferry operations system for 7 ferry terminals, around 60 users, handling 15k-40k tickets per day.\nTech: Go, SQLite, REST APIs, Windows scripting (.bat/PowerShell)",
         "images": [
           "./public/CV/images/placeholder-1.svg",
           "./public/CV/images/placeholder-2.svg",
@@ -62,7 +62,7 @@
       },
       {
         "key": "Frontend",
-        "value": "React, HTML/CSS, SCSS, Vanilla JS"
+        "value": "React, HTML/CSS, WordPress, SCSS"
       },
       {
         "key": "Backend",
@@ -70,15 +70,15 @@
       },
       {
         "key": "Databases",
-        "value": "SQLite, PostgreSQL"
+        "value": "SQLite, PostgreSQL, Airtable"
       },
       {
-        "key": "Systems",
-        "value": "Windows (PowerShell/.bat)"
+        "key": "Tools / Platforms",
+        "value": "NoLoco, Zoho Analytics, Cloudflare Workers"
       },
       {
-        "key": "Operations",
-        "value": "Backup/restore, failover, watchdog monitoring"
+        "key": "Systems / Operations",
+        "value": "Windows (PowerShell/.bat), Backup/restore, failover"
       }
     ]
   },
@@ -91,65 +91,65 @@
         "name": "WordPress Website + Telegram Automation",
         "meta": "Check Unlock VN, Apr 2024 - Jun 2024",
         "desc": {
-          "goal": "Build a WordPress website to promote iCloud support services and provide product-ID lookup from an existing dataset.",
-          "role": "Freelance developer responsible for end-to-end delivery.",
+          "goal": "Deliver a WordPress website for information lookup and customer service request submission.",
+          "role": "WordPress developer (freelance) responsible for end-to-end delivery.",
           "job": {
-            "summary": "Designed and implemented a WordPress platform plus automation to support service operations.",
+            "summary": "Built a WordPress website and Telegram automation to support customer service operations.",
             "sub_jobs": [
-              "Built a product-ID lookup website with a user-friendly interface.",
-              "Developed custom plugins/features in PHP based on client requirements.",
-              "Advised on hosting configuration to optimize cost and stability.",
-              "Built a Telegram chatbot using Cloudflare Worker to support customers."
+              "Delivered a WordPress website that lets customers look up information from existing data and submit service requests.",
+              "Developed custom WordPress features/plugins in PHP based on client needs.",
+              "Built Telegram chatbot automation hosted on Cloudflare Workers.",
+              "Improved the customer request flow with a simpler self-service experience."
             ]
           },
           "result": [
             "Website delivered and met customer needs.",
-            "Telegram chatbot reached 1,500 interactions in 2 weeks."
+            "Telegram chatbot reached about 1,500 participants in around 2 weeks."
           ],
-          "tech": "WordPress, PHP, Telegram Bot API, JavaScript, Cloudflare Worker"
+          "tech": "WordPress, PHP, Telegram Bot API, Python, JavaScript"
         }
       },
       {
-        "name": "AI-enabled Business Dashboard Prototype",
+        "name": "AI-assisted Business Dashboard Prototype",
         "meta": "Honest Agency (Canada), Sep 2024 - Dec 2024",
         "desc": {
-          "goal": "Build a dashboard prototype with AI support for performance analysis, CRM, and insight reporting.",
-          "role": "Application developer, also supporting scope coordination in a PM-style role.",
+          "goal": "Build an AI-assisted business dashboard prototype for performance analysis, CRM data management, and reporting/insights.",
+          "role": "Application Developer Intern, also supporting requirement clarification and weekly stakeholder alignment.",
           "job": {
-            "summary": "Researched low-code solutions and built a demo aligned with business goals.",
+            "summary": "Evaluated a low-code stack and helped build a prototype aligned with business goals.",
             "sub_jobs": [
-              "Compared low-code platforms by delivery speed and scalability.",
-              "Designed data flows connecting Airtable, Noloco, and Zoho Analytics.",
-              "Built core demo features for live stakeholder walkthroughs.",
-              "Clarified requirements per sprint to reduce scope-change risk."
+              "Contributed to an AI-assisted business dashboard prototype.",
+              "Evaluated and implemented a low-code analytics stack using NoLoco, Airtable, and Zoho Analytics.",
+              "Gathered requirements, clarified scope, prioritized features, and aligned weekly goals with stakeholders.",
+              "Balanced delivery speed with cost and implementation complexity."
             ]
           },
           "result": [
             "Prototype met customer needs and supported product direction decisions.",
-            "Delivered complete technical documentation for the next development phase."
+            "Balanced delivery speed with cost and implementation complexity."
           ],
-          "tech": "Noloco, Airtable, Zoho Analytics"
+          "tech": "NoLoco, Airtable, Zoho Analytics"
         }
       },
       {
-        "name": "Ticketing & Ferry Operations Platform",
+        "name": "AGF Ticketing & Ferry Operations System",
         "meta": "An Giang Ferry JSC, Oct 2025 - Present",
         "desc": {
-          "goal": "Build a ticketing and operations system for 7 ferry stations (~60 users) with high daily transaction volume.",
-          "role": "Sole developer owning the full product lifecycle from design to operations.",
+          "goal": "Design and build a ticketing and ferry operations system for 7 ferry terminals, around 60 users, handling 15k-40k tickets per day.",
+          "role": "Software Engineer (Sole Developer) responsible for the full lifecycle from design and development to operations.",
           "job": {
-            "summary": "Delivered a ticketing/validation platform and self-managed server infrastructure optimized for operations.",
+            "summary": "Built a ticketing and ferry operations platform with an on-prem, self-managed server architecture optimized for daily operations.",
             "sub_jobs": [
-              "Built ticketing web flows integrated with custom NanoPi Neo chip software for ticket validation.",
-              "Implemented a primary server and a backup server for the system.",
-              "Built internal management and reporting dashboards.",
-              "Optimized performance, operating cost, and reduced internet dependency."
+              "Delivered 2 web apps: a ticket-selling web app and a data/invoice management and revenue reporting dashboard.",
+              "Designed a self-hosted Admin Server for central management/reporting and Mini Servers at each terminal for local operations and resilience.",
+              "Integrated NanoPi-based ticket scanning/validation devices.",
+              "Implemented backup/restore and failover to minimize downtime during network/device incidents."
             ]
           },
           "result": [
-            "Reduced ticket validation time from ~3 seconds to 0.5–1 second.",
-            "Significantly reduced third-party dependency costs for ticketing and server maintenance.",
-            "Improved usability and installation experience for non-technical operators."
+            "Replaced the legacy system without source-code access.",
+            "Reduced ticket validation latency by about 75% in production workflows.",
+            "Improved usability for non-technical operators while reducing maintenance cost and increasing technical autonomy."
           ],
           "tech": "Go, SQLite, REST APIs, JWT Auth, Vanilla JS, Windows scripting (.bat/PowerShell)"
         }
