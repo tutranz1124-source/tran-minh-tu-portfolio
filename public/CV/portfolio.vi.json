@@ -2,7 +2,7 @@
   "meta": {
     "name_en": "Tu Minh Tran",
     "name_vi": "Trần Minh Tú",
-    "title": "Kỹ sư phần mềm / Lập trình viên Full-stack",
+    "title": "Kỹ sư phần mềm Full-stack",
     "email": "tutranz0101@gmail.com",
     "links": {
       "cv_en": "./public/CV/cv-en.pdf",
@@ -11,24 +11,22 @@
   },
   "hero": {
     "badge": "",
-    "tagline": "Mình là kỹ sư phần mềm full-stack, xây dựng giải pháp end-to-end từ web app, backend service đến vận hành hệ thống.",
-    "about_paragraphs": [
-      "Hiện mình là sole developer tại Công ty CP Phà An Giang, phụ trách hệ thống bán vé và vận hành cho 7 bến phà, khoảng 60 người dùng, xử lý 15k-40k vé mỗi ngày.",
-      "Điểm mạnh của mình là học nhanh, làm rõ nhu cầu và triển khai giải pháp phù hợp từ web, low-code đến server/on-prem và tích hợp thiết bị."
-    ]
+    "tagline": "Kỹ sư full-stack xây dựng hệ thống end-to-end cho vận hành thực tế.",
+    "intro": "Mình làm phần mềm phục vụ vận hành hằng ngày, từ web app, backend đến hệ thống on-prem.",
+    "impact": "Hiện mình là sole developer tại Công ty CP Phà An Giang, đang xây dựng hệ thống bán vé và vận hành cho 7 bến phà.",
+    "strength": "Thích ứng nhanh, làm rõ yêu cầu và triển khai giải pháp thực dụng từ web, low-code đến server và tích hợp thiết bị."
   },
   "experience": {
     "title": "Kinh nghiệm",
-    "subtitle": "Mô tả theo mục tiêu dự án + vai trò + kết quả",
     "items": [
       {
         "date": "04/2024 - 06/2024, HCM",
         "role": "Lập trình viên WordPress\nCheck Unlock VN",
         "desc": "Mục tiêu: triển khai website WordPress cho tra cứu thông tin và gửi yêu cầu dịch vụ từ khách hàng.\nTech: WordPress, PHP, Telegram Bot API, Python, JavaScript",
         "images": [
-          "./public/CV/images/placeholder-1.svg",
-          "./public/CV/images/placeholder-2.svg",
-          "./public/CV/images/placeholder-3.svg"
+          "./public/CV/images/tech/wordpress.svg",
+          "./public/CV/images/tech/php.svg",
+          "./public/CV/images/tech/telegram.svg"
         ]
       },
       {
@@ -36,9 +34,9 @@
         "role": "Lập trình viên ứng dụng\nHonest Agency",
         "desc": "Mục tiêu: tham gia phát triển prototype dashboard doanh nghiệp có hỗ trợ AI cho phân tích hiệu suất, quản lý dữ liệu CRM và báo cáo/insight.\nTech: NoLoco, Airtable, Zoho Analytics",
         "images": [
-          "./public/CV/images/placeholder-1.svg",
-          "./public/CV/images/placeholder-2.svg",
-          "./public/CV/images/placeholder-3.svg"
+          "./public/CV/images/tech/noloco.svg",
+          "./public/CV/images/tech/airtable.svg",
+          "./public/CV/images/tech/zoho.svg"
         ]
       },
       {
@@ -46,9 +44,9 @@
         "role": "Kỹ sư phần mềm\nCông ty CP Phà An Giang (AGF)",
         "desc": "Mục tiêu: xây dựng hệ thống bán vé và vận hành cho 7 bến phà, khoảng 60 người dùng, xử lý 15k-40k vé mỗi ngày.\nTech: Go, SQLite, REST APIs, Windows scripting (.bat/PowerShell)",
         "images": [
-          "./public/CV/images/placeholder-1.svg",
-          "./public/CV/images/placeholder-2.svg",
-          "./public/CV/images/placeholder-3.svg"
+          "./public/CV/images/tech/go.svg",
+          "./public/CV/images/tech/sqlite.svg",
+          "./public/CV/images/tech/javascript.svg"
         ]
       }
     ]

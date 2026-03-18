@@ -2,7 +2,7 @@
   "meta": {
     "name_en": "Tu Minh Tran",
     "name_vi": "Trần Minh Tú",
-    "title": "Software Engineer / Full-stack Developer",
+    "title": "Full-stack Software Engineer",
     "email": "tutranz0101@gmail.com",
     "links": {
       "cv_en": "./public/CV/cv-en.pdf",
@@ -11,24 +11,22 @@
   },
   "hero": {
     "badge": "",
-    "tagline": "I am a full-stack software engineer who builds end-to-end solutions across web apps, backend services, and system operations.",
-    "about_paragraphs": [
-      "I am currently the sole developer at An Giang Ferry JSC, building a ticketing and ferry operations system for 7 ferry terminals, around 60 users, handling 15k-40k tickets per day.",
-      "My strength is adapting quickly, clarifying requirements, and delivering practical solutions across web, low-code, on-prem/server environments, and device integration."
-    ]
+    "tagline": "Full-stack engineer building end-to-end systems for real-world operations.",
+    "intro": "I build practical software across web apps, backend services, and on-prem operations.",
+    "impact": "Sole developer at An Giang Ferry JSC, building a ticketing and ferry operations system for 7 ferry terminals.",
+    "strength": "Fast adaptation, clear requirement handling, and practical delivery across web, low-code, servers, and device integration."
   },
   "experience": {
     "title": "Experience",
-    "subtitle": "Project goals + role + results",
     "items": [
       {
         "date": "Apr 2024 - Jun 2024, Ho Chi Minh City",
         "role": "WordPress Developer\nCheck Unlock VN",
         "desc": "Goal: deliver a WordPress website for information lookup and service request submission.\nTech: WordPress, PHP, Telegram Bot API, Python, JavaScript",
         "images": [
-          "./public/CV/images/placeholder-1.svg",
-          "./public/CV/images/placeholder-2.svg",
-          "./public/CV/images/placeholder-3.svg"
+          "./public/CV/images/tech/wordpress.svg",
+          "./public/CV/images/tech/php.svg",
+          "./public/CV/images/tech/telegram.svg"
         ]
       },
       {
@@ -36,9 +34,9 @@
         "role": "Application Developer\nHonest Agency",
         "desc": "Goal: contribute to an AI-assisted business dashboard prototype for performance analysis, CRM data management, and reporting/insights.\nTech: NoLoco, Airtable, Zoho Analytics",
         "images": [
-          "./public/CV/images/placeholder-1.svg",
-          "./public/CV/images/placeholder-2.svg",
-          "./public/CV/images/placeholder-3.svg"
+          "./public/CV/images/tech/noloco.svg",
+          "./public/CV/images/tech/airtable.svg",
+          "./public/CV/images/tech/zoho.svg"
         ]
       },
       {
@@ -46,9 +44,9 @@
         "role": "Software Engineer\nAn Giang Ferry JSC (AGF)",
         "desc": "Goal: build a ticketing and ferry operations system for 7 ferry terminals, around 60 users, handling 15k-40k tickets per day.\nTech: Go, SQLite, REST APIs, Windows scripting (.bat/PowerShell)",
         "images": [
-          "./public/CV/images/placeholder-1.svg",
-          "./public/CV/images/placeholder-2.svg",
-          "./public/CV/images/placeholder-3.svg"
+          "./public/CV/images/tech/go.svg",
+          "./public/CV/images/tech/sqlite.svg",
+          "./public/CV/images/tech/javascript.svg"
         ]
       }
     ]

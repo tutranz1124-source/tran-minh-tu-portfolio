@@ -20,7 +20,8 @@ const BOOT_LOADER_ANIM_MS = 1500;
 const BOOT_LOADER_TIMEOUT_MS = 12000;
 
 let observerCleanup = null;
-let focusTrapCleanup = null;
+let drawerFocusTrapCleanup = null;
+let popupFocusTrapCleanup = null;
 let stateSnapshot = getState();
 let languageRequestSeq = 0;
 let navIndicatorController = null;
@@ -53,7 +54,6 @@ const POPUP_SHARED_EASING = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const POPUP_SHARED_FADE_DURATION = 160;
 const POPUP_SHARED_GHOST_FADE_DURATION = 120;
 const POPUP_SHARED_OVERLAY_DURATION = 180;
-
 function isMobileViewport() {
   return window.matchMedia("(max-width: 767px)").matches;
 }
@@ -291,13 +291,44 @@ function applyDrawerState(isOpen) {
   drawer.setAttribute("aria-hidden", isOpen ? "false" : "true");
   toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
 
-  if (focusTrapCleanup) {
-    focusTrapCleanup();
-    focusTrapCleanup = null;
+  if (drawerFocusTrapCleanup) {
+    drawerFocusTrapCleanup();
+    drawerFocusTrapCleanup = null;
   }
 
   if (isOpen && panel) {
-    focusTrapCleanup = trapFocus(panel);
+    drawerFocusTrapCleanup = trapFocus(panel);
+  }
+}
+
+function applyPopupModalState(isOpen) {
+  const backgroundNodes = [
+    document.getElementById("navbar"),
+    ...document.querySelectorAll("#app > *:not(#work-popup)"),
+  ];
+
+  backgroundNodes.forEach((node) => {
+    if (!(node instanceof HTMLElement)) {
+      return;
+    }
+    node.inert = Boolean(isOpen);
+    if (isOpen) {
+      node.setAttribute("aria-hidden", "true");
+    } else {
+      node.removeAttribute("aria-hidden");
+    }
+  });
+
+  if (popupFocusTrapCleanup) {
+    popupFocusTrapCleanup();
+    popupFocusTrapCleanup = null;
+  }
+
+  if (isOpen) {
+    const panel = document.querySelector("#work-popup .work-popup__panel");
+    if (panel instanceof HTMLElement) {
+      popupFocusTrapCleanup = trapFocus(panel);
+    }
   }
 }
 
@@ -445,9 +476,24 @@ function cancelPopupAnimations() {
   restorePopupSourceVisibility();
 }
 
+function getPopupOpenKeyframes() {
+  return [
+    { opacity: 0, transform: "translate3d(0, 18px, 0) scale(0.985)" },
+    { opacity: 1, transform: "translate3d(0, 0, 0) scale(1) rotate(0deg)" },
+  ];
+}
+
+function getPopupCloseKeyframes() {
+  return [
+    { opacity: 1, transform: "translate3d(0, 0, 0) scale(1) rotate(0deg)" },
+    { opacity: 0, transform: "translate3d(0, 14px, 0) scale(0.99) rotate(0deg)" },
+  ];
+}
+
 function finishWorkPopupClose(popup) {
   popup.classList.add("u-hidden");
   popup.setAttribute("aria-hidden", "true");
+  applyPopupModalState(false);
   syncGlobalScrollLock();
 
   const focusTarget = popupLastFocused;
@@ -577,10 +623,7 @@ function closeWorkPopup() {
     );
   } else {
     popupPanelAnimation = panel.animate(
-      [
-        { opacity: 1, transform: "translate3d(0, 0, 0) scale(1)" },
-        { opacity: 0, transform: "translate3d(0, 8px, 0) scale(0.97)" },
-      ],
+      getPopupCloseKeyframes(),
       {
         duration: POPUP_CLOSE_PANEL_DURATION,
         easing: POPUP_EASING,
@@ -792,6 +835,9 @@ function openWorkPopup(index, triggerEl) {
         detailRows.forEach((row) => {
           const bullet = document.createElement("li");
           const classes = ["item__desc"];
+          if (row.label) {
+            classes.push("item__desc--with-label");
+          }
           if (row.isSub) {
             classes.push("item__desc--sub");
           }
@@ -830,9 +876,11 @@ function openWorkPopup(index, triggerEl) {
     triggerEl instanceof HTMLElement && triggerEl.dataset.motionStyle
       ? triggerEl.dataset.motionStyle
       : "zoom";
+  popup.classList.add("work-popup--ledger");
 
   popup.classList.remove("u-hidden");
   popup.setAttribute("aria-hidden", "false");
+  applyPopupModalState(true);
   syncGlobalScrollLock();
 
   const canAnimate =
@@ -966,10 +1014,7 @@ function openWorkPopup(index, triggerEl) {
       );
 
       popupPanelAnimation = panel.animate(
-        [
-          { opacity: 0, transform: "translate3d(0, 10px, 0) scale(0.94)" },
-          { opacity: 1, transform: "translate3d(0, 0, 0) scale(1)" },
-        ],
+        getPopupOpenKeyframes(),
         {
           duration: POPUP_OPEN_PANEL_DURATION,
           delay: POPUP_OPEN_PANEL_DELAY,

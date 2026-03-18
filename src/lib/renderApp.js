@@ -64,7 +64,7 @@ function getCvActions(meta, lang, availability) {
     return [{
       key: "default",
       href: legacyHref,
-      label: lang === "vi" ? "Tai CV" : "Download CV",
+      label: lang === "vi" ? "Tải CV" : "Download CV",
     }];
   }
 
@@ -140,19 +140,19 @@ function initialsFromName(name) {
 function applyHeroAvatarPlaceholder(core, displayName, lang) {
   core.replaceChildren(
     el("span", "hero__avatar-placeholder", { "aria-hidden": "true" }, [initialsFromName(displayName)]),
-    el("span", "u-sr-only", {}, [lang === "vi" ? "Cho dat anh dai dien tam thoi" : "Temporary avatar placeholder"]),
+    el("span", "u-sr-only", {}, [lang === "vi" ? "Chỗ đặt ảnh đại diện tạm thời" : "Temporary avatar placeholder"]),
   );
 }
 
 function createHeroAvatar(meta, displayName, lang) {
   const avatarHref = safeHref(meta?.links?.avatar || meta?.avatar || meta?.photo || "");
-  const wrapper = el("div", "hero__avatar", { "aria-label": lang === "vi" ? "Anh dai dien" : "Avatar" });
+  const wrapper = el("div", "hero__avatar", { "aria-label": lang === "vi" ? "Ảnh đại diện" : "Avatar" });
 
   const core = el("div", "hero__avatar-core");
   if (avatarHref) {
     const imageNode = el("img", "hero__avatar-img", {
       src: avatarHref,
-      alt: lang === "vi" ? "Anh dai dien" : "Avatar",
+      alt: lang === "vi" ? "Ảnh đại diện" : "Avatar",
       loading: "eager",
       decoding: "async",
       draggable: "false",
@@ -343,7 +343,7 @@ function createNavbarContent(state) {
       {
         type: "button",
         dataset: { langToggle: "true", langNext: nextLang },
-        "aria-label": lang === "vi" ? "Switch to English" : "Chuyen sang tieng Viet",
+        "aria-label": lang === "vi" ? "Switch to English" : "Chuyển sang tiếng Việt",
       },
       [
         createGlobeIcon(),
@@ -359,7 +359,7 @@ function createNavbarContent(state) {
         type: "button",
         dataset: { playMode: "toggle" },
         "aria-pressed": playMode ? "true" : "false",
-        "aria-label": lang === "vi" ? "Bat tat Hide UI" : "Toggle Hide UI",
+        "aria-label": lang === "vi" ? "Bật/tắt Hide UI" : "Toggle Hide UI",
       },
       ["Hide UI"],
     ),
@@ -375,7 +375,7 @@ function createPlayModeScreen(state) {
   const lang = state.lang;
   const controls = el("div", "play-mode-screen__controls", {
     role: "group",
-    "aria-label": lang === "vi" ? "Dieu khien mau fluid" : "Fluid color controls",
+    "aria-label": lang === "vi" ? "Điều khiển màu fluid" : "Fluid color controls",
   }, [
     el(
       "button",
@@ -383,9 +383,9 @@ function createPlayModeScreen(state) {
       {
         type: "button",
         dataset: { fluidPlay: "random" },
-        "aria-label": lang === "vi" ? "Mau ngau nhien" : "Random color",
+        "aria-label": lang === "vi" ? "Màu ngẫu nhiên" : "Random color",
       },
-      [lang === "vi" ? "Mau ngau nhien" : "Random Color"],
+      [lang === "vi" ? "Màu ngẫu nhiên" : "Random Color"],
     ),
     el(
       "button",
@@ -393,15 +393,62 @@ function createPlayModeScreen(state) {
       {
         type: "button",
         dataset: { fluidPlay: "default" },
-        "aria-label": lang === "vi" ? "Mac dinh" : "Back to default",
+        "aria-label": lang === "vi" ? "Mặc định" : "Back to default",
       },
-      [lang === "vi" ? "Mac dinh" : "Default"],
+      [lang === "vi" ? "Mặc định" : "Default"],
     ),
   ]);
   return el("section", "play-mode-screen reveal reveal--section", { id: "top", "aria-label": "Play mode" }, [
     el("p", "play-mode-screen__text", { "aria-hidden": "true" }, [name]),
     controls,
   ]);
+}
+
+function getHeroPresentation(content, lang) {
+  const meta = content.meta ?? {};
+  const hero = content.hero ?? {};
+
+  const defaults =
+    lang === "vi"
+      ? {
+          subtitle: "K? s? ph?n m?m Full-stack",
+          tagline: "M?nh x?y d?ng gi?i ph?p end-to-end cho web app, backend service v? v?n h?nh h? th?ng.",
+          intro: "M?nh thi?t k? v? ph?t tri?n ph?n m?m ph?c v? tr?c ti?p cho v?n h?nh doanh nghi?p h?ng ng?y, t? web app ??n gi?i ph?p on-prem.",
+          impact: "Sole developer t?i C?ng ty CP Ph? An Giang, ?ang x?y d?ng h? th?ng b?n v? v? v?n h?nh cho 7 b?n ph?.",
+          strength: "Th?ch ?ng nhanh, l?m r? y?u c?u, v? tri?n khai gi?i ph?p th?c d?ng t? web, low-code ??n server v? t?ch h?p thi?t b?.",
+          contactLabel: "Li?n h?",
+          resumeLabels: {
+            en: "H? s? (EN)",
+            vi: "H? s? (VI)",
+            default: "H? s?",
+          },
+        }
+      : {
+          subtitle: "Full-stack Software Engineer",
+          tagline: "I build end-to-end solutions across web apps, backend services, and system operations.",
+          intro: "I design and build practical software that supports daily business operations across web, backend, and on-prem environments.",
+          impact: "Sole developer at An Giang Ferry JSC, building a ticketing and ferry operations system for 7 ferry terminals.",
+          strength: "Fast adaptation, clear requirement handling, and practical delivery across web, low-code, server, and device integration.",
+          contactLabel: "Contact me",
+          resumeLabels: {
+            en: "Resume (EN)",
+            vi: "Resume (VI)",
+            default: "Resume",
+          },
+        };
+
+  const subtitle = meta.title || hero.subtitle || defaults.subtitle;
+  const tagline = hero.tagline || defaults.tagline;
+
+  return {
+    subtitle,
+    tagline,
+    intro: hero.intro || defaults.intro,
+    impact: hero.impact || hero.current_impact || defaults.impact,
+    strength: hero.strength || hero.summary || defaults.strength,
+    contactLabel: defaults.contactLabel,
+    resumeLabels: defaults.resumeLabels,
+  };
 }
 
 function createHeroCard(state, content) {
@@ -412,45 +459,49 @@ function createHeroCard(state, content) {
   const heroBadge = typeof hero.badge === "string" ? hero.badge.trim() : "";
   const emailHref = meta.email ? `mailto:${meta.email}` : "";
   const cvActions = getCvActions(meta, lang, state.cvAvailable);
+  const heroCopy = getHeroPresentation(content, lang);
 
   const card = el("article", "card hero rolling-panel reveal", { "aria-labelledby": "hero-title" });
   if (heroBadge) {
     card.appendChild(el("span", "hero__badge", {}, [heroBadge]));
   }
-  card.appendChild(
-    el("div", "hero__head", {}, [
-      el("div", "hero__titles", {}, [
-        createRollingTitle(displayName, "hero-title", "h1"),
-        el("p", "hero__subtitle", {}, [meta.title ?? "Software Engineer / Full-stack Developer"]),
-      ]),
-      createHeroAvatar(meta, displayName, lang),
+  const layout = el("div", "hero__layout");
+  const topRow = el("div", "hero__top");
+  const titleBlock = el("div", "hero__title-block");
+  const bodyBlock = el("div", "hero__support");
+  const sideCol = el("aside", "hero__side", { "aria-label": lang === "vi" ? "Anh dai dien" : "Avatar" });
+
+  titleBlock.appendChild(
+    el("div", "hero__titles", {}, [
+      createRollingTitle(displayName, "hero-title", "h1"),
+      el("p", "hero__subtitle", {}, [heroCopy.subtitle]),
     ]),
   );
 
-  if (hero.tagline) {
-    card.appendChild(el("p", "hero__tagline u-line-clamp-2", {}, [hero.tagline]));
-  }
-
-  const about = el("div", "hero__about");
-  (hero.about_paragraphs ?? []).slice(0, 2).forEach((paragraph) => {
-    about.appendChild(el("p", "u-line-clamp-3", {}, [paragraph]));
-  });
-  card.appendChild(about);
+  bodyBlock.appendChild(el("p", "hero__tagline", {}, [heroCopy.tagline]));
+  bodyBlock.appendChild(el("p", "hero__intro", {}, [heroCopy.intro]));
+  bodyBlock.appendChild(el("p", "hero__support-copy", {}, [heroCopy.impact]));
+  bodyBlock.appendChild(el("p", "hero__support-copy", {}, [heroCopy.strength]));
 
   const cta = el("div", "hero__cta");
   cta.appendChild(
     createActionButton({
-      label: lang === "vi" ? "Lien he" : "Contact",
+      label: heroCopy.contactLabel,
       href: emailHref || "#top",
       kind: "primary",
+      extraClass: "hero__cta-primary",
     }),
   );
   if (cvActions.length) {
     const cvGroup = el("div", "hero__cv-options");
     cvActions.forEach((action) => {
+      const resumeLabel =
+        action.key && heroCopy.resumeLabels[action.key]
+          ? heroCopy.resumeLabels[action.key]
+          : heroCopy.resumeLabels.default;
       cvGroup.appendChild(
         createActionButton({
-          label: action.label,
+          label: resumeLabel,
           href: action.href,
           extraClass: "btn--cv-option",
         }),
@@ -458,49 +509,16 @@ function createHeroCard(state, content) {
     });
     cta.appendChild(cvGroup);
   }
-  card.appendChild(cta);
+  sideCol.appendChild(createHeroAvatar(meta, displayName, lang));
+
+  topRow.appendChild(titleBlock);
+  topRow.appendChild(sideCol);
+
+  layout.appendChild(topRow);
+  layout.appendChild(bodyBlock);
+  layout.appendChild(cta);
+  card.appendChild(layout);
   return card;
-}
-
-function createExperienceSection(content, lang) {
-  const experience = content.experience ?? {};
-  const works = getDetailsWorkItems(content);
-
-  const section = el("section", "section reveal reveal--section", { id: "experience" });
-  const card = el("article", "card list-card experience reveal", { "aria-labelledby": "experience-title" });
-  card.appendChild(el("h2", "", { id: "experience-title" }, [experience.title ?? "Experience"]));
-  card.appendChild(el("p", "list-card__subtitle", {}, [experience.subtitle ?? "Recent roles"]));
-
-  const list = el("ul", "experience-grid");
-  (experience.items ?? []).slice(0, 4).forEach((item, index) => {
-    const hasWork = Boolean(works[index]);
-    const descLines = normalizeDescLines(item.desc);
-    const roleText = normalizeRoleText(item.role) || "";
-    const body = el("div", "experience-tile__body", {}, [
-      el("h3", "experience-tile__role", {}, [roleText]),
-      el("p", "item__meta", {}, [item.date ?? ""]),
-      descLines.length
-        ? createDescList(descLines, "item__desc-list", "item__desc")
-        : el("p", "item__desc", {}, [item.desc ?? ""]),
-    ]);
-    const node = el("li", `item experience-tile${hasWork ? " is-clickable" : ""}`, hasWork ? {
-      dataset: { workOpen: String(index), motionStyle: "zoom" },
-      tabindex: "0",
-      role: "button",
-      "aria-haspopup": "dialog",
-      "aria-label":
-        lang === "vi"
-          ? `Mở chi tiết work liên quan: ${item.role ?? "Kinh nghiệm"}`
-          : `Open related work details: ${item.role ?? "Experience"}`,
-    } : {}, [
-      createExperienceMedia(item, "experience-tile__media"),
-      body,
-    ]);
-    list.appendChild(node);
-  });
-  card.appendChild(list);
-  section.appendChild(card);
-  return section;
 }
 
 function createExperienceCarouselSection(content, lang) {
@@ -512,7 +530,7 @@ function createExperienceCarouselSection(content, lang) {
   }
   const carouselItems = experienceItems.slice(0, 3);
   const rawSectionTitle = typeof experience.title === "string" ? experience.title.trim() : "";
-  const sectionTitle = rawSectionTitle || (lang === "vi" ? "Kinh nghiem" : "Experience");
+  const sectionTitle = rawSectionTitle || (lang === "vi" ? "Kinh nghiệm" : "Experience");
 
   const section = el("section", "section reveal reveal--section", { id: "experience" });
   const card = el("article", "card list-card experience-carousel-panel rolling-panel reveal", { "aria-labelledby": "experience-carousel-title" });
@@ -559,7 +577,7 @@ function createExperienceCarouselSection(content, lang) {
                 "aria-haspopup": "dialog",
                 "aria-label":
                   lang === "vi"
-                    ? `Mo chi tiet: ${item.role ?? "Kinh nghiem"}`
+                    ? `Mở chi tiết: ${item.role ?? "Kinh nghiệm"}`
                     : `Open details: ${item.role ?? "Experience"}`,
                 dataset: {
                   workOpen: String(index),
@@ -653,7 +671,7 @@ function createFloatingContactMenu(content, state) {
   root.appendChild(
     el("button", "contact-fab__trigger", {
       type: "button",
-      "aria-label": lang === "vi" ? "Mo menu lien he" : "Open contact menu",
+      "aria-label": lang === "vi" ? "Mở menu liên hệ" : "Open contact menu",
       "aria-controls": "contact-fab-actions",
       "aria-expanded": "false",
       dataset: { contactFabToggle: "true" },
@@ -674,15 +692,28 @@ function createSiteFooter(content) {
   return footer;
 }
 
-function createWorkPopup() {
-  const panel = el("div", "work-popup__panel", { role: "dialog", "aria-modal": "true", "aria-labelledby": "work-popup-title" }, [
-    el("h3", "work-popup__title", { id: "work-popup-title" }, [""]),
-    el("ul", "item__desc-list work-popup__desc-list", { id: "work-popup-desc" }, []),
-    el("p", "item__meta work-popup__meta", { id: "work-popup-meta" }, [""]),
+function createWorkPopup(lang = "en") {
+  const closeLabel = lang === "vi" ? "Đóng" : "Close";
+  const panel = el("div", "work-popup__panel", {
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "work-popup-title",
+    "aria-describedby": "work-popup-desc",
+    tabindex: "-1",
+  }, [
+    el("div", "work-popup__header", {}, [
+      el("div", "work-popup__heading", {}, [
+        el("h3", "work-popup__title", { id: "work-popup-title" }, [""]),
+        el("p", "item__meta work-popup__meta", { id: "work-popup-meta" }, [""]),
+      ]),
+      el("button", "work-popup__close", { type: "button", dataset: { workClose: "true" }, "aria-label": closeLabel }, ["\u00d7"]),
+    ]),
+    el("div", "work-popup__body", {}, [
+      el("ul", "item__desc-list work-popup__desc-list", { id: "work-popup-desc" }, []),
+    ]),
   ]);
 
   const frame = el("div", "work-popup__frame", {}, [
-    el("button", "work-popup__close", { type: "button", dataset: { workClose: "true" }, "aria-label": "Close" }, ["\u00d7"]),
     panel,
   ]);
 
@@ -723,7 +754,7 @@ export function renderApp(state) {
       fragment.appendChild(contactFab);
     }
     fragment.appendChild(createSiteFooter(state.content));
-    fragment.appendChild(createWorkPopup());
+    fragment.appendChild(createWorkPopup(state.lang));
   }
 
   app.appendChild(fragment);
