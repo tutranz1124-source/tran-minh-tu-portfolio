@@ -167,9 +167,11 @@ function applyResponsiveCarouselVars(stageEl) {
   const measuredWidth = stageEl.clientWidth || stageEl.getBoundingClientRect().width || 336;
   const stageWidth = clamp(measuredWidth, 220, 1600);
   const viewportWidth = window.innerWidth || document.documentElement.clientWidth || stageWidth;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
   const viewportRatio = clamp((viewportWidth - 360) / (1440 - 360), 0, 1);
   const isMobile = viewportWidth <= 767;
   const isTablet = !isMobile && viewportWidth <= 1023;
+  const isCompactMobile = isMobile && viewportWidth <= 390 && viewportHeight <= 700;
   const mobileArrowScale = isMobile ? 0.8 : 1;
 
   const slideWidthTarget = stageWidth * (isMobile ? 0.82 : (isTablet ? 0.48 : 0.36));
@@ -178,8 +180,8 @@ function applyResponsiveCarouselVars(stageEl) {
   const slideWidthMax = Math.max(slideWidthMin, Math.min(slideWidthMaxRaw, stageWidth - 18));
   const slideWidth = Math.round(clamp(slideWidthTarget, slideWidthMin, slideWidthMax));
 
-  const slideHeightMin = isMobile ? 310 : (isTablet ? 334 : 350);
-  const slideHeightMax = isMobile ? 420 : (isTablet ? 446 : 468);
+  const slideHeightMin = isMobile ? (isCompactMobile ? 342 : 322) : (isTablet ? 334 : 350);
+  const slideHeightMax = isMobile ? (isCompactMobile ? 456 : 434) : (isTablet ? 446 : 468);
   const baseSlideHeight = clamp(slideWidth * 1.16, slideHeightMin, slideHeightMax);
   const slideHeight = Math.round(clamp(baseSlideHeight * 1.2, slideHeightMin, slideHeightMax * 1.2));
   const arrowScale = 0.85 * mobileArrowScale;

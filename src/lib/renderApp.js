@@ -41,7 +41,7 @@ function createActionButton({ label, href, kind = "secondary", extraClass = "" }
   }, [label]);
 }
 
-function getCvActions(meta, lang, availability) {
+function getCvActions(meta, lang) {
   const links = meta?.links ?? {};
   const options = [
     {
@@ -68,15 +68,7 @@ function getCvActions(meta, lang, availability) {
     }];
   }
 
-  if (typeof availability === "boolean") {
-    return availability ? options : [];
-  }
-
-  if (!availability || typeof availability !== "object") {
-    return options;
-  }
-
-  return options.filter((item) => Boolean(availability[item.key]));
+  return options;
 }
 
 function createCircleAction({ label, href, iconSvg, className = "", tip = "" }) {
@@ -411,16 +403,16 @@ function getHeroPresentation(content, lang) {
   const defaults =
     lang === "vi"
       ? {
-          subtitle: "K? s? ph?n m?m Full-stack",
-          tagline: "M?nh x?y d?ng gi?i ph?p end-to-end cho web app, backend service v? v?n h?nh h? th?ng.",
-          intro: "M?nh thi?t k? v? ph?t tri?n ph?n m?m ph?c v? tr?c ti?p cho v?n h?nh doanh nghi?p h?ng ng?y, t? web app ??n gi?i ph?p on-prem.",
-          impact: "Sole developer t?i C?ng ty CP Ph? An Giang, ?ang x?y d?ng h? th?ng b?n v? v? v?n h?nh cho 7 b?n ph?.",
-          strength: "Th?ch ?ng nhanh, l?m r? y?u c?u, v? tri?n khai gi?i ph?p th?c d?ng t? web, low-code ??n server v? t?ch h?p thi?t b?.",
-          contactLabel: "Li?n h?",
+          subtitle: "Kỹ sư phần mềm Full-stack",
+          tagline: "Mình xây dựng giải pháp end-to-end cho web app, backend service và vận hành hệ thống.",
+          intro: "Mình thiết kế và phát triển phần mềm phục vụ trực tiếp cho vận hành doanh nghiệp hằng ngày, từ web app đến giải pháp on-prem.",
+          impact: "Sole developer tại Công ty CP Phà An Giang, đang xây dựng hệ thống bán vé và vận hành cho 7 bến phà.",
+          strength: "Thích ứng nhanh, làm rõ yêu cầu, và triển khai giải pháp thực dụng từ web, low-code đến server và tích hợp thiết bị.",
+          contactLabel: "Liên hệ",
           resumeLabels: {
-            en: "H? s? (EN)",
-            vi: "H? s? (VI)",
-            default: "H? s?",
+            en: "Hồ sơ (EN)",
+            vi: "Hồ sơ (VI)",
+            default: "Hồ sơ",
           },
         }
       : {
@@ -443,9 +435,7 @@ function getHeroPresentation(content, lang) {
   return {
     subtitle,
     tagline,
-    intro: hero.intro || defaults.intro,
-    impact: hero.impact || hero.current_impact || defaults.impact,
-    strength: hero.strength || hero.summary || defaults.strength,
+    lines: Array.isArray(hero.lines) && hero.lines.length ? hero.lines : defaults.lines,
     contactLabel: defaults.contactLabel,
     resumeLabels: defaults.resumeLabels,
   };
@@ -479,9 +469,11 @@ function createHeroCard(state, content) {
   );
 
   bodyBlock.appendChild(el("p", "hero__tagline", {}, [heroCopy.tagline]));
-  bodyBlock.appendChild(el("p", "hero__intro", {}, [heroCopy.intro]));
-  bodyBlock.appendChild(el("p", "hero__support-copy", {}, [heroCopy.impact]));
-  bodyBlock.appendChild(el("p", "hero__support-copy", {}, [heroCopy.strength]));
+  (heroCopy.lines ?? []).forEach((line) => {
+    if (typeof line === "string" && line.trim()) {
+      bodyBlock.appendChild(el("p", "hero__support-copy", {}, [line.trim()]));
+    }
+  });
 
   const cta = el("div", "hero__cta");
   cta.appendChild(
@@ -685,6 +677,22 @@ function createFloatingContactMenu(content, state) {
   return root;
 }
 
+function syncFloatingContactMenu(content, state) {
+  const existing = document.getElementById("contact-fab");
+  if (existing) {
+    existing.remove();
+  }
+
+  if (!content || state.playMode) {
+    return;
+  }
+
+  const contactFab = createFloatingContactMenu(content, state);
+  if (contactFab) {
+    document.body.appendChild(contactFab);
+  }
+}
+
 function createSiteFooter(content) {
   const footer = el("footer", "site-footer");
   const note = content.footer?.note ? `${content.footer.note} - ` : "";
@@ -733,6 +741,7 @@ export function renderApp(state) {
   clear(navbarMount);
   navbarMount.appendChild(createNavbarContent(state));
   clear(app);
+  syncFloatingContactMenu(null, state);
 
   if (!state.content) {
     app.appendChild(createSkeleton());
@@ -749,15 +758,13 @@ export function renderApp(state) {
       fragment.appendChild(experienceCarousel);
     }
     fragment.appendChild(createSkillsSection(state.content));
-    const contactFab = createFloatingContactMenu(state.content, state);
-    if (contactFab) {
-      fragment.appendChild(contactFab);
-    }
     fragment.appendChild(createSiteFooter(state.content));
     fragment.appendChild(createWorkPopup(state.lang));
   }
 
   app.appendChild(fragment);
+  syncFloatingContactMenu(state.content, state);
   document.documentElement.lang = state.lang;
   document.title = `${activeName(state.content, state.lang)} | Portfolio`;
 }
+

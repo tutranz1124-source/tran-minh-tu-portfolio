@@ -12,9 +12,9 @@
   "hero": {
     "badge": "",
     "tagline": "Full-stack engineer building end-to-end systems for real-world operations.",
-    "intro": "I build practical software across web apps, backend services, and on-prem operations.",
-    "impact": "Sole developer at An Giang Ferry JSC, building a ticketing and ferry operations system for 7 ferry terminals.",
-    "strength": "Fast adaptation, clear requirement handling, and practical delivery across web, low-code, servers, and device integration."
+    "lines": [
+      "Sole developer at An Giang Ferry JSC, building a ticketing and ferry operations system for 7 ferry terminals and around 60 users."
+    ]
   },
   "experience": {
     "title": "Experience",

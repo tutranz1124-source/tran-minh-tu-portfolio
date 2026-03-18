@@ -12,9 +12,9 @@
   "hero": {
     "badge": "",
     "tagline": "Kỹ sư full-stack xây dựng hệ thống end-to-end cho vận hành thực tế.",
-    "intro": "Mình làm phần mềm phục vụ vận hành hằng ngày, từ web app, backend đến hệ thống on-prem.",
-    "impact": "Hiện mình là sole developer tại Công ty CP Phà An Giang, đang xây dựng hệ thống bán vé và vận hành cho 7 bến phà.",
-    "strength": "Thích ứng nhanh, làm rõ yêu cầu và triển khai giải pháp thực dụng từ web, low-code đến server và tích hợp thiết bị."
+    "lines": [
+      "Sole developer tại Công ty CP Phà An Giang, đang xây dựng hệ thống bán vé và vận hành cho 7 bến phà, phục vụ khoảng 60 người dùng."
+    ]
   },
   "experience": {
     "title": "Kinh nghiệm",
