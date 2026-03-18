@@ -709,8 +709,9 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: clamp(208px, 14.8vw, 264px);
-  height: clamp(182px, 12.8vw, 226px);
+  width: clamp(184px, 12.4vw, 228px);
+  aspect-ratio: 3 / 4;
+  height: auto;
   margin-inline: 0;
   opacity: 0.9;
 }
@@ -2727,8 +2728,9 @@ li,
   }
 
   .hero__avatar {
-    width: clamp(190px, 62vw, 260px);
-    height: clamp(130px, 34vw, 178px);
+    width: clamp(176px, 48vw, 232px);
+    aspect-ratio: 3 / 4;
+    height: auto;
   }
 
   .hero__avatar-placeholder {
@@ -2987,8 +2989,9 @@ li,
   }
 
   .hero__avatar {
-    width: clamp(170px, 70vw, 240px);
-    height: clamp(118px, 42vw, 164px);
+    width: clamp(168px, 64vw, 216px);
+    aspect-ratio: 3 / 4;
+    height: auto;
   }
 
   .hero__top {
