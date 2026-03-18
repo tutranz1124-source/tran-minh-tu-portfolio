@@ -6,7 +6,8 @@
     "email": "tutranz0101@gmail.com",
     "links": {
       "cv_en": "./public/CV/cv-en.pdf",
-      "cv_vi": "./public/CV/cv-vi.pdf"
+      "cv_vi": "./public/CV/cv-vi.pdf",
+      "avatar": "./public/CV/images/avatar.png"
     }
   },
   "hero": {
